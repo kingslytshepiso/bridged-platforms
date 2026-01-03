@@ -16,7 +16,7 @@ const Contact = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // In a real application, you would send this data to a backend
-    console.log("Form submitted:", formData);
+    // Form submission logic would go here
     setSubmitted(true);
     setTimeout(() => {
       setSubmitted(false);
@@ -129,7 +129,7 @@ const Contact = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg"
               >
-                Thank you for your message! We'll get back to you soon.
+                Thank you for your message! We&apos;ll get back to you soon.
               </motion.div>
             )}
           </motion.div>

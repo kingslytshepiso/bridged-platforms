@@ -62,6 +62,51 @@ The built files will be in the `dist` directory.
 npm run preview
 ```
 
+### Linting
+
+The project uses ESLint for code quality and consistency:
+
+```bash
+# Run linting
+npm run lint
+
+# Fix linting issues automatically
+npm run lint:fix
+```
+
+### Testing
+
+The project uses Vitest and React Testing Library for unit testing:
+
+```bash
+# Run tests in watch mode
+npm run test
+
+# Run tests once
+npm run test:run
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+### Pre-commit Hooks
+
+The project uses Husky and lint-staged to automatically run linting and tests on staged files before each commit. This ensures code quality and consistency.
+
+- **Husky**: Git hooks manager
+- **lint-staged**: Runs linters and tests on staged files only
+- **ESLint**: JavaScript/React linting with React-specific rules
+- **Vitest**: Fast unit testing framework
+
+When you commit, the pre-commit hook will:
+1. Run ESLint on all staged `.js` and `.jsx` files
+2. Automatically fix any auto-fixable issues
+3. Run unit tests for related files
+4. Prevent commit if there are unfixable errors or failing tests
+
 ## Project Structure
 
 ```

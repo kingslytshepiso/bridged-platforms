@@ -1,3 +1,4 @@
+import PropTypes from "prop-types";
 import React from "react";
 import { useTheme } from "../context/ThemeContext";
 
@@ -20,6 +21,11 @@ const Logo = ({ className = "h-10", forceLight = false }) => {
       className={`${className} ${getFilterClass()} transition-all duration-300`}
     />
   );
+};
+
+Logo.propTypes = {
+  className: PropTypes.string,
+  forceLight: PropTypes.bool,
 };
 
 export default Logo;
