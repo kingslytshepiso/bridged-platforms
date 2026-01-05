@@ -25,13 +25,13 @@ const RegionalFocus = () => {
             <HiGlobeAlt className="w-16 h-16 text-white" />
           </motion.div>
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Regional Focus: South Africa
+            Regional Focus: African Market
           </h2>
           <p className="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed">
-            We focus on sourcing and analyzing public data relevant to South
-            Africa and surrounding regions. Our AI-powered systems predict
+            We focus on sourcing and analyzing public data relevant to the African
+            market and its diverse regions. Our AI-powered systems predict
             trends and continuously generate tailored solutions for local
-            challenges, with data as the central driver of innovation.
+            challenges across the continent, with data as the central driver of innovation.
           </p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -63,7 +63,7 @@ const RegionalFocus = () => {
               </div>
               <h3 className="font-bold text-lg mb-2">Local Solutions</h3>
               <p className="text-white/80 text-sm">
-                Tailored solutions for South African challenges
+                Tailored solutions for African market challenges
               </p>
             </div>
           </motion.div>

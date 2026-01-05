@@ -57,11 +57,11 @@ const Footer = () => {
               Focus Areas
             </h4>
             <ul className="space-y-2 text-gray-400">
-              <li>Microsoft Power Platform</li>
               <li>AI & Automation</li>
+              <li>Workflow Implementation</li>
               <li>API Integration</li>
               <li>Cybersecurity</li>
-              <li>South Africa Market</li>
+              <li>African Market</li>
             </ul>
           </div>
         </div>

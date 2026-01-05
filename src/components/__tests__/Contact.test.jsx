@@ -44,8 +44,8 @@ describe('Contact', () => {
     
     expect(screen.getByText('Region')).toBeInTheDocument()
     expect(screen.getByText('Response Time')).toBeInTheDocument()
-    expect(screen.getByText('contact@bridgedplatforms.com')).toBeInTheDocument()
-    expect(screen.getByText('South Africa')).toBeInTheDocument()
+    expect(screen.getByText('admin@bridgedplatforms.co.za')).toBeInTheDocument()
+    expect(screen.getByText('African Market')).toBeInTheDocument()
     expect(screen.getByText('Within 24 hours')).toBeInTheDocument()
   })
 

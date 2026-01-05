@@ -64,7 +64,7 @@ const Hero = () => {
         >
           <motion.h1
             variants={itemVariants}
-            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400 bg-clip-text text-transparent"
+            className="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 pb-2 md:pb-3 lg:pb-4 bg-gradient-to-r from-primary-600 to-secondary-600 dark:from-primary-400 dark:to-secondary-400 bg-clip-text text-transparent"
           >
             Bridged Platforms
           </motion.h1>

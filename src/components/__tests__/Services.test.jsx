@@ -29,12 +29,12 @@ describe('Services', () => {
       </ThemeProvider>
     )
 
-    expect(screen.getByText('Power Platform Consulting')).toBeInTheDocument()
-    expect(screen.getByText('Custom AI Applications')).toBeInTheDocument()
+    expect(screen.getByText('Custom AI Application Development')).toBeInTheDocument()
+    expect(screen.getByText('Agentic Workflow Implementation')).toBeInTheDocument()
+    expect(screen.getByText('System Workflow Automations')).toBeInTheDocument()
     expect(screen.getByText('API Integration')).toBeInTheDocument()
     expect(screen.getByText('Cost Optimization')).toBeInTheDocument()
     expect(screen.getByText('Cybersecurity Implementation')).toBeInTheDocument()
-    expect(screen.getByText('Developer Tools & Practices')).toBeInTheDocument()
   })
 
   it('should render service descriptions', () => {
@@ -45,7 +45,7 @@ describe('Services', () => {
     )
 
     expect(
-      screen.getByText(/Expert consulting on system automation using Microsoft Power Platform/i)
+      screen.getByText(/Expert automation solutions using Microsoft Power Platform/i)
     ).toBeInTheDocument()
     expect(
       screen.getByText(/Development of custom applications with integrated AI models/i)
@@ -60,8 +60,10 @@ describe('Services', () => {
     )
 
     // Icons are rendered as SVG elements, we can check if the service cards contain them
-    const serviceCards = screen.getAllByText('Power Platform Consulting')
+    const serviceCards = screen.getAllByText('Custom AI Application Development')
     expect(serviceCards.length).toBeGreaterThan(0)
   })
 })
+
+
 

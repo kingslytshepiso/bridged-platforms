@@ -1,32 +1,33 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { motion, useInView } from "framer-motion";
+import React, { useRef } from "react";
 
 const About = () => {
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const values = [
     {
-      title: 'Vision',
+      title: "Vision",
       description:
-        'To build an interconnected ecosystem of intelligent systems that leverage AI, automation, and secure APIs to streamline workflows, reduce manual effort, and maximize the value of existing enterprise tools like Microsoft Power Platform.',
+        "To build an interconnected ecosystem of intelligent systems that leverage AI, automation, and secure APIs to streamline workflows, reduce manual effort, and maximize the value of existing enterprise tools like Microsoft Power Platform.",
     },
     {
-      title: 'Mission',
+      title: "Mission",
       description:
-        'To empower businesses to develop and deploy high-quality software faster by integrating AI-driven automation, custom applications, and secure, cost-optimized infrastructure—while ensuring human oversight and adherence to cybersecurity best practices.',
+        "To empower businesses to develop and deploy high-quality software faster by integrating AI-driven automation, custom applications, and secure, cost-optimized infrastructure, while ensuring human oversight and adherence to cybersecurity best practices.",
     },
     {
-      title: 'Strategic Outlook',
+      title: "Strategic Outlook",
       description:
-        'Support businesses in delivering software faster while maintaining high standards of quality and security. Recognize the ongoing need for skilled AI operators to manage sensitive knowledge responsibly. Prioritize quality, reproducibility, and compliance in all solutions.',
+        "Support businesses in delivering software faster while maintaining high standards of quality and security. Recognize the ongoing need for skilled AI operators to manage sensitive knowledge responsibly. Prioritize quality, reproducibility, and compliance in all solutions.",
     },
-  ]
+  ];
 
   return (
-    <section id="about" className="section-padding bg-gradient-to-br from-gray-50 to-primary-50 dark:from-gray-800 dark:to-gray-900">
+    <section
+      id="about"
+      className="section-padding bg-gradient-to-br from-gray-50 to-primary-50 dark:from-gray-800 dark:to-gray-900"
+    >
       <div className="container-custom" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -38,7 +39,8 @@ const About = () => {
             About Bridged Platforms
           </h2>
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            Driving innovation through intelligent automation and secure integration
+            Driving innovation through intelligent automation and secure
+            integration
           </p>
         </motion.div>
 
@@ -47,11 +49,7 @@ const About = () => {
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 50 }}
-              animate={
-                isInView
-                  ? { opacity: 1, y: 0 }
-                  : { opacity: 0, y: 50 }
-              }
+              animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
               transition={{ duration: 0.6, delay: index * 0.2 }}
               whileHover={{ y: -10 }}
               className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700"
@@ -137,8 +135,7 @@ const About = () => {
         </motion.div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default About
-
+export default About;

@@ -1,59 +1,61 @@
 import { motion, useInView } from "framer-motion";
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   HiBolt,
   HiCurrencyDollar,
   HiLink,
   HiLockClosed,
-  HiWrenchScrewdriver,
+  HiSparkles,
 } from "react-icons/hi2";
 import { MdMemory } from "react-icons/md";
 
 const Services = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  const cardRefs = useRef([]);
 
   const services = [
     {
-      title: "Power Platform Consulting",
+      title: "Custom AI Application Development",
       description:
-        "Expert consulting on system automation using Microsoft Power Platform and custom deployment workflows to streamline your business processes.",
-      icon: HiBolt,
+        "Development of custom applications with integrated AI models for specific tasks, tailored to your unique business requirements and use cases.",
+      icon: MdMemory,
       color: "primary",
     },
     {
-      title: "Custom AI Applications",
+      title: "Agentic Workflow Implementation",
       description:
-        "Development of custom applications with integrated AI models for specific tasks, tailored to your unique business requirements.",
-      icon: MdMemory,
+        "Design and implementation of intelligent, autonomous workflows that leverage AI agents to make decisions and execute complex business processes across platforms.",
+      icon: HiSparkles,
       color: "secondary",
+    },
+    {
+      title: "System Workflow Automations",
+      description:
+        "Expert automation solutions using Microsoft Power Platform and custom deployment workflows to streamline your business processes and reduce manual effort.",
+      icon: HiBolt,
+      color: "accent",
     },
     {
       title: "API Integration",
       description:
-        "API-based system integration to enable agentic workflows across platforms, connecting your existing tools seamlessly.",
+        "API-based system integration to enable seamless connectivity across platforms, connecting your existing tools and services efficiently.",
       icon: HiLink,
-      color: "accent",
+      color: "primary",
     },
     {
       title: "Cost Optimization",
       description:
-        "Establishment of specialized teams to optimize costs across cloud and software services, maximizing your ROI.",
+        "Establishment of specialized teams to optimize costs across cloud and software services, maximizing your ROI and operational efficiency.",
       icon: HiCurrencyDollar,
-      color: "primary",
+      color: "secondary",
     },
     {
       title: "Cybersecurity Implementation",
       description:
-        "Implementation of strong cybersecurity standards as a foundational layer, ensuring your systems are protected.",
+        "Implementation of strong cybersecurity standards as a foundational layer, ensuring your systems are protected against threats.",
       icon: HiLockClosed,
-      color: "secondary",
-    },
-    {
-      title: "Developer Tools & Practices",
-      description:
-        "Tools and practices to accelerate cloud error detection, enforce standards, and streamline development workflows.",
-      icon: HiWrenchScrewdriver,
       color: "accent",
     },
   ];
@@ -92,6 +94,15 @@ const Services = () => {
     return colors[color] || colors.primary;
   };
 
+  const getBackgroundColor = (color) => {
+    const colors = {
+      primary: "from-primary-200/40 to-primary-300/40 dark:from-primary-700/30 dark:to-primary-800/30",
+      secondary: "from-secondary-200/40 to-secondary-300/40 dark:from-secondary-700/30 dark:to-secondary-800/30",
+      accent: "from-accent-200/40 to-accent-300/40 dark:from-accent-700/30 dark:to-accent-800/30",
+    };
+    return colors[color] || colors.primary;
+  };
+
   const getIconColorClasses = (color) => {
     const colors = {
       primary: "bg-primary-600",
@@ -104,9 +115,26 @@ const Services = () => {
   return (
     <section
       id="services"
-      className="section-padding bg-white dark:bg-gray-800"
+      className="section-padding bg-white dark:bg-gray-800 relative overflow-hidden"
     >
-      <div className="container-custom" ref={ref}>
+      {/* Animated background mask */}
+      {hoveredIndex !== null && (
+        <motion.div
+          key={hoveredIndex}
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.8 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className={`absolute inset-0 bg-gradient-to-br ${getBackgroundColor(
+            services[hoveredIndex]?.color
+          )} pointer-events-none z-0 blur-3xl`}
+          style={{
+            maskImage: `radial-gradient(circle 600px at center, black 20%, transparent 80%)`,
+            WebkitMaskImage: `radial-gradient(circle 600px at center, black 20%, transparent 80%)`,
+          }}
+        />
+      )}
+      <div className="container-custom relative z-10" ref={ref}>
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
@@ -130,9 +158,12 @@ const Services = () => {
           {services.map((service, index) => (
             <motion.div
               key={index}
+              ref={(el) => (cardRefs.current[index] = el)}
               variants={itemVariants}
               whileHover={{ y: -10, scale: 1.02 }}
-              className={`p-6 rounded-xl border-2 transition-all duration-300 ${getColorClasses(
+              onHoverStart={() => setHoveredIndex(index)}
+              onHoverEnd={() => setHoveredIndex(null)}
+              className={`p-6 rounded-xl border-2 transition-all duration-300 relative z-10 ${getColorClasses(
                 service.color
               )}`}
             >

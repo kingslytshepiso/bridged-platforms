@@ -149,7 +149,7 @@ const Contact = () => {
                 Email
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                contact@bridgedplatforms.com
+                admin@bridgedplatforms.co.za
               </p>
             </div>
             <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">
@@ -160,7 +160,7 @@ const Contact = () => {
                 Region
               </h3>
               <p className="text-gray-600 dark:text-gray-300 text-sm">
-                South Africa
+                African Market
               </p>
             </div>
             <div className="p-6 bg-gray-50 dark:bg-gray-700 rounded-lg">

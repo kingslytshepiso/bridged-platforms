@@ -49,11 +49,11 @@ describe('Footer', () => {
     )
 
     expect(screen.getByText('Focus Areas')).toBeInTheDocument()
-    expect(screen.getByText('Microsoft Power Platform')).toBeInTheDocument()
     expect(screen.getByText('AI & Automation')).toBeInTheDocument()
+    expect(screen.getByText('Workflow Implementation')).toBeInTheDocument()
     expect(screen.getByText('API Integration')).toBeInTheDocument()
     expect(screen.getByText('Cybersecurity')).toBeInTheDocument()
-    expect(screen.getByText('South Africa Market')).toBeInTheDocument()
+    expect(screen.getByText('African Market')).toBeInTheDocument()
   })
 
   it('should render copyright notice with current year', () => {
@@ -82,4 +82,6 @@ describe('Footer', () => {
     expect(screen.getByText('Contact').closest('a')).toHaveAttribute('href', '#contact')
   })
 })
+
+
 
