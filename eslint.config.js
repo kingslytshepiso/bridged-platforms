@@ -24,6 +24,8 @@ export default [
         clearTimeout: 'readonly',
         localStorage: 'readonly',
         navigator: 'readonly',
+        fetch: 'readonly',
+        global: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {

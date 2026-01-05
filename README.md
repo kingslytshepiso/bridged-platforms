@@ -11,6 +11,8 @@ A modern, responsive single-page application for Bridged Platforms - a consultin
 - **Component-Based**: Easy to maintain and extend with modular components
 - **SEO Friendly**: Semantic HTML and proper meta tags
 - **Theme-Aware Logo**: Logo automatically adapts to current theme
+- **Contact Form Integration**: Integrated with Azure Function API for form submissions
+- **Real-time Status Indicators**: Loading, success, and error states for form submissions
 
 ## Technology Stack
 
@@ -41,12 +43,24 @@ The website uses a carefully selected color palette:
 npm install
 ```
 
-2. Start the development server:
+2. Configure API endpoint (optional for local development):
+```bash
+# Create .env file
+echo "VITE_API_URL=http://localhost:7071/api/ContactForm" > .env
+```
+
+3. Start the Azure Function (in a separate terminal):
+```bash
+cd ../bridged-platforms-contact-us-function
+func start
+```
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-3. Open your browser and navigate to `http://localhost:5173`
+5. Open your browser and navigate to `http://localhost:5173`
 
 ### Build for Production
 
@@ -118,7 +132,7 @@ bridged-platforms/
 │   │   ├── Services.jsx    # Services grid with hover effects
 │   │   ├── About.jsx       # About section with vision/mission
 │   │   ├── RegionalFocus.jsx # South Africa focus section
-│   │   ├── Contact.jsx     # Contact form
+│   │   ├── Contact.jsx     # Contact form with API integration
 │   │   ├── Footer.jsx      # Footer with links
 │   │   └── Logo.jsx        # Theme-aware logo component
 │   ├── context/
@@ -126,10 +140,13 @@ bridged-platforms/
 │   ├── App.jsx             # Main app component with ThemeProvider
 │   ├── main.jsx            # React entry point
 │   └── index.css           # Global styles and Tailwind imports
+├── docs/
+│   └── API_INTEGRATION.md  # API integration documentation
 ├── index.html              # HTML template
 ├── package.json            # Dependencies and scripts
 ├── tailwind.config.js      # Tailwind configuration with dark mode
 ├── vite.config.js          # Vite configuration
+├── .env                    # Environment variables (not in git)
 └── README.md               # This file
 ```
 
@@ -142,8 +159,37 @@ All components are modular and easy to customize:
 - **Services**: Grid of service cards with hover animations
 - **About**: Vision, mission, and strategic outlook
 - **RegionalFocus**: Highlighting South Africa focus
-- **Contact**: Contact form with validation
+- **Contact**: Contact form integrated with Azure Function API, with real-time status indicators
 - **Footer**: Footer with links and company info
+
+## API Integration
+
+The contact form is integrated with an Azure Function API that handles form submissions. See [API Integration Guide](docs/API_INTEGRATION.md) for detailed information.
+
+### Quick Setup
+
+1. **Local Development:**
+   - Create `.env` file:
+     ```env
+     VITE_API_URL=http://localhost:7071/api/ContactForm
+     VITE_FUNCTION_KEY=  # Optional for local - Azure Functions Core Tools provides default
+     ```
+   - Start Azure Function: `func start` (in the contact-us-function directory)
+   - Start website: `npm run dev`
+
+2. **Production:**
+   - Get Function Key from Azure Portal: Function App > Functions > ContactForm > Function Keys
+   - Set environment variables:
+     - `VITE_API_URL` = Your Azure Function URL
+     - `VITE_FUNCTION_KEY` = Your function key from Azure Portal
+   - Build: `npm run build`
+   - Deploy the `dist` folder
+
+### Form Status Indicators
+
+- **Loading**: Shows spinner and "Sending..." message
+- **Success**: Green message with checkmark, form clears automatically
+- **Error**: Red message with error details, form data preserved
 
 ## Customization
 

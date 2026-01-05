@@ -7,14 +7,14 @@ import Contact from '../Contact'
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className }) => <div className={className}>{children}</div>,
-    button: ({ children, onClick, type, className }) => (
-      <button onClick={onClick} type={type} className={className}>
+    div: ({ children, className, ...props }) => <div className={className} {...props}>{children}</div>,
+    button: ({ children, onClick, type, className, disabled, ...props }) => (
+      <button onClick={onClick} type={type} className={className} disabled={disabled} {...props}>
         {children}
       </button>
     ),
   },
-  useInView: () => ({ ref: { current: null }, isInView: true }),
+  useInView: () => true,
 }))
 
 describe('Contact', () => {
@@ -71,6 +71,14 @@ describe('Contact', () => {
   })
 
   it('should show success message after form submission', async () => {
+    // Mock fetch API
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: async () => ({ message: 'Success' }),
+      })
+    )
+
     const user = userEvent.setup()
     render(
       <ThemeProvider>
@@ -89,7 +97,7 @@ describe('Contact', () => {
     await user.click(submitButton)
 
     await waitFor(() => {
-      expect(screen.getByText(/Thank you for your message/i)).toBeInTheDocument()
+      expect(screen.getByText(/Thank you! Your message has been sent successfully/i)).toBeInTheDocument()
     })
   })
 

@@ -11,17 +11,68 @@ const Contact = () => {
     email: "",
     message: "",
   });
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState({
+    type: null, // 'success', 'error', 'loading'
+    message: "",
+  });
 
-  const handleSubmit = (e) => {
+  // API endpoint - defaults to localhost for development
+  // Set VITE_API_URL environment variable for production
+  const API_URL =
+    import.meta.env.VITE_API_URL ||
+    "http://localhost:7071/api/ContactForm";
+
+  // Azure Function Key for authentication
+  // Set VITE_FUNCTION_KEY environment variable
+  // For local dev, Azure Functions Core Tools provides a default key
+  // For production, get the key from Azure Portal > Function > Function Keys
+  const FUNCTION_KEY = import.meta.env.VITE_FUNCTION_KEY || "";
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // In a real application, you would send this data to a backend
-    // Form submission logic would go here
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ name: "", email: "", message: "" });
-    }, 3000);
+    setStatus({ type: "loading", message: "Sending message..." });
+
+    try {
+      const headers = {
+        "Content-Type": "application/json",
+      };
+
+      // Add function key to headers for authentication
+      if (FUNCTION_KEY) {
+        headers["x-functions-key"] = FUNCTION_KEY;
+      }
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setStatus({
+          type: "success",
+          message: "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+        });
+        setFormData({ name: "", email: "", message: "" });
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setStatus({ type: null, message: "" });
+        }, 5000);
+      } else {
+        setStatus({
+          type: "error",
+          message: result.error || "Failed to send message. Please try again.",
+        });
+      }
+    } catch {
+      setStatus({
+        type: "error",
+        message:
+          "Network error. Please check your connection and try again.",
+      });
+    }
   };
 
   const handleChange = (e) => {
@@ -115,21 +166,90 @@ const Contact = () => {
 
               <motion.button
                 type="submit"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="w-full md:w-auto px-8 py-4 bg-primary-600 text-white rounded-lg font-semibold shadow-lg hover:bg-primary-700 transition-colors"
+                disabled={status.type === "loading"}
+                whileHover={status.type !== "loading" ? { scale: 1.05 } : {}}
+                whileTap={status.type !== "loading" ? { scale: 0.95 } : {}}
+                className={`w-full md:w-auto px-8 py-4 rounded-lg font-semibold shadow-lg transition-colors ${
+                  status.type === "loading"
+                    ? "bg-gray-400 dark:bg-gray-600 text-white cursor-not-allowed"
+                    : "bg-primary-600 text-white hover:bg-primary-700"
+                }`}
               >
-                {submitted ? "Message Sent! ✓" : "Send Message"}
+                {status.type === "loading" ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Sending...
+                  </span>
+                ) : status.type === "success" ? (
+                  "Message Sent! ✓"
+                ) : (
+                  "Send Message"
+                )}
               </motion.button>
             </form>
 
-            {submitted && (
+            {/* Status Messages */}
+            {status.type && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-4 p-4 bg-green-100 dark:bg-green-900/30 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 rounded-lg"
+                exit={{ opacity: 0, y: -10 }}
+                className={`mt-4 p-4 rounded-lg border ${
+                  status.type === "success"
+                    ? "bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-600 text-green-700 dark:text-green-300"
+                    : status.type === "error"
+                    ? "bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-600 text-red-700 dark:text-red-300"
+                    : "bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-600 text-blue-700 dark:text-blue-300"
+                }`}
               >
-                Thank you for your message! We&apos;ll get back to you soon.
+                <div className="flex items-start gap-2">
+                  {status.type === "success" && (
+                    <svg
+                      className="w-5 h-5 mt-0.5 flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                  {status.type === "error" && (
+                    <svg
+                      className="w-5 h-5 mt-0.5 flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  )}
+                  <p className="flex-1">{status.message}</p>
+                </div>
               </motion.div>
             )}
           </motion.div>
