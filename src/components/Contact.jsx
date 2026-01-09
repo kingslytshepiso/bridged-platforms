@@ -37,12 +37,16 @@ const Contact = () => {
         "Content-Type": "application/json",
       };
 
-      // Add function key to headers for authentication
+      // Build URL with code parameter for authentication
+      let requestUrl = API_URL;
       if (FUNCTION_KEY) {
-        headers["x-functions-key"] = FUNCTION_KEY;
+        // Append code as query parameter
+        const url = new URL(requestUrl);
+        url.searchParams.set("code", FUNCTION_KEY);
+        requestUrl = url.toString();
       }
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(requestUrl, {
         method: "POST",
         headers: headers,
         body: JSON.stringify(formData),

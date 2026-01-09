@@ -95,6 +95,7 @@ Follow the [Azure Function Deployment Guide](../bridged-platforms-contact-us-fun
 Set the environment variables in your hosting platform:
 
 **Vercel:**
+
 ```bash
 vercel env add VITE_API_URL
 # Enter: https://your-function-app.azurewebsites.net/api/ContactForm
@@ -104,11 +105,13 @@ vercel env add VITE_FUNCTION_KEY
 ```
 
 **Netlify:**
+
 - Site settings > Environment variables
 - Add `VITE_API_URL` = `https://your-function-app.azurewebsites.net/api/ContactForm`
 - Add `VITE_FUNCTION_KEY` = `your-function-key-from-azure-portal`
 
 **Other platforms:**
+
 - Set `VITE_API_URL` in your platform's environment variable settings
 - Set `VITE_FUNCTION_KEY` in your platform's environment variable settings
 
@@ -124,6 +127,7 @@ npm run build
 ### Step 6: Configure CORS
 
 In Azure Portal:
+
 1. Function App > CORS
 2. Add your website domain: `https://yourdomain.com`
 3. Remove `*` if present
@@ -167,18 +171,18 @@ curl -X POST http://localhost:7071/api/ContactForm \
 ### Test in Browser Console
 
 ```javascript
-fetch('http://localhost:7071/api/ContactForm', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+fetch("http://localhost:7071/api/ContactForm", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    name: 'Test User',
-    email: 'test@example.com',
-    message: 'Test message'
-  })
+    name: "Test User",
+    email: "test@example.com",
+    message: "Test message",
+  }),
 })
-.then(r => r.json())
-.then(console.log)
-.catch(console.error);
+  .then((r) => r.json())
+  .then(console.log)
+  .catch(console.error);
 ```
 
 ## 🐛 Troubleshooting
@@ -186,6 +190,7 @@ fetch('http://localhost:7071/api/ContactForm', {
 ### Form Not Submitting
 
 **Check:**
+
 - Azure Function is running (`func start`)
 - API URL is correct in `.env` file
 - Browser console for errors
@@ -194,12 +199,14 @@ fetch('http://localhost:7071/api/ContactForm', {
 ### CORS Errors
 
 **Solution:**
+
 - For local: CORS is set to `*` by default
 - For production: Configure CORS in Azure Portal
 
 ### Network Errors
 
 **Solution:**
+
 - Verify Azure Function is accessible
 - Check function URL is correct
 - Ensure network allows outbound requests
@@ -207,6 +214,7 @@ fetch('http://localhost:7071/api/ContactForm', {
 ### Environment Variable Not Working
 
 **Solution:**
+
 - Ensure variable starts with `VITE_` prefix
 - Restart dev server after changing `.env`
 - Check `.env` file is in project root
@@ -215,6 +223,7 @@ fetch('http://localhost:7071/api/ContactForm', {
 ### 401 Unauthorized Error
 
 **Solution:**
+
 - Verify `VITE_FUNCTION_KEY` is set correctly
 - For production: Get the key from Azure Portal > Function > Function Keys
 - For local: Check `func start` logs for the master key, or leave empty to use default
@@ -234,4 +243,3 @@ fetch('http://localhost:7071/api/ContactForm', {
 - **Use Network tab** to inspect API requests
 - **Test with real emails** to verify delivery
 - **Monitor Azure Function logs** for errors
-

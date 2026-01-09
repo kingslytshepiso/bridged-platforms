@@ -66,8 +66,8 @@ When running `func start`, Azure Functions Core Tools automatically generates a 
 
 ### How It Works
 
-- The function key is sent in the `x-functions-key` header with each request
-- Azure Functions automatically validates the key
+- The function key is sent as the `code` query parameter in the request URL
+- Azure Functions automatically validates the key when `authLevel` is set to `function`
 - If the key is missing or invalid, the function returns `401 Unauthorized`
 - This ensures only your website can call the function
 
@@ -264,7 +264,7 @@ If validation fails, the error message will be displayed in the form.
 
 ## Security Considerations
 
-1. **Function Key Authentication:** The function requires a valid function key in the `x-functions-key` header
+1. **Function Key Authentication:** The function requires a valid function key sent as the `code` query parameter
 2. **Environment Variables:** Never commit `.env` files to version control
 3. **Function Keys:** Store function keys securely in environment variables
 4. **API Keys:** The function uses Mailjet API keys stored in Azure (not in the website)

@@ -26,6 +26,7 @@ export default [
         navigator: 'readonly',
         fetch: 'readonly',
         global: 'readonly',
+        URL: 'readonly',
       },
       parserOptions: {
         ecmaFeatures: {
