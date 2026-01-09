@@ -19,8 +19,7 @@ const Contact = () => {
   // API endpoint - defaults to localhost for development
   // Set VITE_API_URL environment variable for production
   const API_URL =
-    import.meta.env.VITE_API_URL ||
-    "http://localhost:7071/api/ContactForm";
+    import.meta.env.VITE_API_URL || "http://localhost:7071/api/ContactForm";
 
   // Azure Function Key for authentication
   // Set VITE_FUNCTION_KEY environment variable
@@ -41,8 +40,21 @@ const Contact = () => {
       let requestUrl = API_URL;
       if (FUNCTION_KEY) {
         // Append code as query parameter
+        // Decode the function key first to avoid double-encoding
+        // (searchParams.set() will encode it properly)
+        // Try to decode, but if it fails (not encoded), use original
+        let decodedKey = FUNCTION_KEY;
+        try {
+          // Check if it looks URL-encoded (contains %)
+          if (FUNCTION_KEY.includes("%")) {
+            decodedKey = decodeURIComponent(FUNCTION_KEY);
+          }
+        } catch {
+          // If decoding fails, use original key
+          decodedKey = FUNCTION_KEY;
+        }
         const url = new URL(requestUrl);
-        url.searchParams.set("code", FUNCTION_KEY);
+        url.searchParams.set("code", decodedKey);
         requestUrl = url.toString();
       }
 
@@ -57,7 +69,8 @@ const Contact = () => {
       if (response.ok) {
         setStatus({
           type: "success",
-          message: "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+          message:
+            "Thank you! Your message has been sent successfully. We'll get back to you soon.",
         });
         setFormData({ name: "", email: "", message: "" });
         // Clear success message after 5 seconds
@@ -73,8 +86,7 @@ const Contact = () => {
     } catch {
       setStatus({
         type: "error",
-        message:
-          "Network error. Please check your connection and try again.",
+        message: "Network error. Please check your connection and try again.",
       });
     }
   };
