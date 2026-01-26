@@ -1,5 +1,5 @@
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   HiBolt,
   HiCurrencyDollar,
@@ -8,12 +8,20 @@ import {
   HiSparkles,
 } from "react-icons/hi2";
 import { MdMemory } from "react-icons/md";
+import { trackServiceView, trackServiceInteraction } from "../services/applicationInsights";
 
 const Services = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const cardRefs = useRef([]);
+
+  // Track when Services section comes into view
+  useEffect(() => {
+    if (isInView) {
+      trackServiceView('Services Section');
+    }
+  }, [isInView]);
 
   const services = [
     {
@@ -161,9 +169,13 @@ const Services = () => {
               ref={(el) => (cardRefs.current[index] = el)}
               variants={itemVariants}
               whileHover={{ y: -10, scale: 1.02 }}
-              onHoverStart={() => setHoveredIndex(index)}
+              onHoverStart={() => {
+                setHoveredIndex(index);
+                trackServiceInteraction(service.title);
+              }}
               onHoverEnd={() => setHoveredIndex(null)}
-              className={`p-6 rounded-xl border-2 transition-all duration-300 relative z-10 ${getColorClasses(
+              onClick={() => trackServiceView(service.title)}
+              className={`p-6 rounded-xl border-2 transition-all duration-300 relative z-10 cursor-pointer ${getColorClasses(
                 service.color
               )}`}
             >

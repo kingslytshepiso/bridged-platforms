@@ -2,12 +2,19 @@ import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import React, { useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import Logo from "./Logo";
+import { trackThemeToggle } from "../services/applicationInsights";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { scrollY } = useScroll();
   const { theme, toggleTheme } = useTheme();
+
+  const handleThemeToggle = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    trackThemeToggle(newTheme);
+    toggleTheme();
+  };
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
@@ -56,7 +63,7 @@ const Header = () => {
             ))}
             {/* Theme Toggle */}
             <motion.button
-              onClick={toggleTheme}
+              onClick={handleThemeToggle}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -97,7 +104,7 @@ const Header = () => {
           {/* Mobile Menu Button & Theme Toggle */}
           <div className="flex items-center space-x-2 md:hidden">
             <motion.button
-              onClick={toggleTheme}
+              onClick={handleThemeToggle}
               whileTap={{ scale: 0.95 }}
               className="p-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               aria-label="Toggle theme"

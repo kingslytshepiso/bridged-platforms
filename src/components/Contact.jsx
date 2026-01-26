@@ -1,7 +1,8 @@
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { HiBolt, HiGlobeAlt } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
+import { trackContactForm, trackPageView } from "../services/applicationInsights";
 
 const Contact = () => {
   const ref = useRef(null);
@@ -15,6 +16,14 @@ const Contact = () => {
     type: null, // 'success', 'error', 'loading'
     message: "",
   });
+  const [formStarted, setFormStarted] = useState(false);
+
+  // Track when Contact section comes into view
+  useEffect(() => {
+    if (isInView) {
+      trackPageView('Contact Section');
+    }
+  }, [isInView]);
 
   // API endpoint - defaults to localhost for development
   // Set VITE_API_URL environment variable for production
@@ -30,6 +39,7 @@ const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "loading", message: "Sending message..." });
+    trackContactForm('submitted', { hasName: !!formData.name, hasEmail: !!formData.email });
 
     try {
       const headers = {
@@ -72,18 +82,22 @@ const Contact = () => {
           message:
             "Thank you! Your message has been sent successfully. We'll get back to you soon.",
         });
+        trackContactForm('success');
         setFormData({ name: "", email: "", message: "" });
+        setFormStarted(false);
         // Clear success message after 5 seconds
         setTimeout(() => {
           setStatus({ type: null, message: "" });
         }, 5000);
       } else {
+        trackContactForm('error', { error: result.error });
         setStatus({
           type: "error",
           message: result.error || "Failed to send message. Please try again.",
         });
       }
-    } catch {
+    } catch (error) {
+      trackContactForm('error', { error: error.message });
       setStatus({
         type: "error",
         message: "Network error. Please check your connection and try again.",
@@ -92,6 +106,10 @@ const Contact = () => {
   };
 
   const handleChange = (e) => {
+    if (!formStarted) {
+      setFormStarted(true);
+      trackContactForm('started');
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,

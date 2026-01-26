@@ -13,6 +13,9 @@ A modern, responsive single-page application for Bridged Platforms - a consultin
 - **Theme-Aware Logo**: Logo automatically adapts to current theme
 - **Contact Form Integration**: Integrated with Azure Function API for form submissions
 - **Real-time Status Indicators**: Loading, success, and error states for form submissions
+- **Application Insights**: User tracking and analytics via Azure Application Insights
+- **Cookie Consent System**: GDPR/POPIA compliant cookie management with granular controls
+- **Custom Event Tracking**: Detailed tracking of user interactions and behaviors
 
 ## Technology Stack
 
@@ -43,10 +46,15 @@ The website uses a carefully selected color palette:
 npm install
 ```
 
-2. Configure API endpoint (optional for local development):
+2. Configure environment variables:
 ```bash
-# Create .env file
-echo "VITE_API_URL=http://localhost:7071/api/ContactForm" > .env
+# Create .env file (copy from env.example)
+cp env.example .env
+
+# Edit .env and set:
+# - VITE_API_URL (for contact form API)
+# - VITE_FUNCTION_KEY (optional for local)
+# - VITE_APPINSIGHTS_KEY (for analytics - optional)
 ```
 
 3. Start the Azure Function (in a separate terminal):
@@ -165,6 +173,16 @@ All components are modular and easy to customize:
 ## API Integration
 
 The contact form is integrated with an Azure Function API that handles form submissions. See [API Integration Guide](docs/API_INTEGRATION.md) for detailed information.
+
+## Analytics & Cookie Management
+
+The application includes comprehensive analytics tracking and cookie consent management:
+
+- **Application Insights**: User behavior tracking and analytics
+- **Cookie Consent**: GDPR/POPIA compliant cookie management
+- **Custom Events**: Track service views, form interactions, theme changes, and more
+
+See [Analytics and Cookies Documentation](docs/ANALYTICS_AND_COOKIES.md) for detailed setup and usage instructions.
 
 ### Quick Setup
 
