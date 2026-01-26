@@ -20,6 +20,8 @@ The application now includes:
    - Click "Show connection string" and copy the full connection string
 
 2. **Configure Environment Variable**:
+
+   **For Local Development:**
    ```bash
    # In your .env file - Use the full connection string (preferred)
    VITE_APPINSIGHTS_KEY=InstrumentationKey=xxx;IngestionEndpoint=https://xxx.in.applicationinsights.azure.com/;LiveEndpoint=https://xxx.livediagnostics.monitor.azure.com/;ApplicationId=xxx
@@ -27,6 +29,27 @@ The application now includes:
    # Or use just the instrumentation key (legacy support)
    VITE_APPINSIGHTS_KEY=your-instrumentation-key-here
    ```
+
+   **For Azure Static Web Apps Deployment:**
+   
+   The environment variable must be configured in two places:
+   
+   a. **GitHub Secrets** (for build-time):
+      - Go to your GitHub repository
+      - Navigate to Settings > Secrets and variables > Actions
+      - Add a new secret named `VITE_APPINSIGHTS_KEY`
+      - Paste your connection string or instrumentation key
+      - The GitHub Actions workflow will use this during the build process
+   
+   b. **Azure Portal** (optional, for runtime configuration):
+      - Go to Azure Portal > Static Web Apps > Your App
+      - Navigate to Configuration > Application settings
+      - Add a new application setting:
+        - Name: `VITE_APPINSIGHTS_KEY`
+        - Value: Your connection string or instrumentation key
+      - Click "Save"
+   
+   **Important:** For Vite applications, environment variables are embedded at **build time**, not runtime. The GitHub secret is the primary method. Azure Portal configuration is only needed if you're using Azure Static Web Apps' built-in environment variable system.
 
 3. **Application Insights will only initialize if:**
    - The instrumentation key is provided
