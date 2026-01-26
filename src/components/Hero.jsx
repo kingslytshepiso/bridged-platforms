@@ -1,7 +1,13 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { trackPageView, trackCTAClick } from '../services/applicationInsights'
 
 const Hero = () => {
+  // Track page view when Hero section loads
+  useEffect(() => {
+    trackPageView('Home Page');
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -92,6 +98,7 @@ const Hero = () => {
               href="#services"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => trackCTAClick('Our Services', 'Hero')}
               className="px-8 py-4 bg-primary-600 dark:bg-primary-500 text-white rounded-lg font-semibold shadow-lg hover:bg-primary-700 dark:hover:bg-primary-600 transition-colors"
             >
               Our Services
@@ -100,6 +107,7 @@ const Hero = () => {
               href="#contact"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => trackCTAClick('Get Started', 'Hero')}
               className="px-8 py-4 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border-2 border-primary-600 dark:border-primary-500 rounded-lg font-semibold hover:bg-primary-50 dark:hover:bg-gray-700 transition-colors"
             >
               Get Started
