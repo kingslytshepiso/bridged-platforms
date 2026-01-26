@@ -21,7 +21,11 @@ const mockAppInsightsInstance = {
 }
 
 vi.mock('@microsoft/applicationinsights-web', () => ({
-  ApplicationInsights: vi.fn().mockImplementation(() => mockAppInsightsInstance),
+  ApplicationInsights: class {
+    constructor() {
+      return mockAppInsightsInstance
+    }
+  },
 }))
 
 describe('applicationInsights', () => {
@@ -32,6 +36,8 @@ describe('applicationInsights', () => {
     // Reset modules and re-import to get fresh state
     vi.resetModules()
     applicationInsights = await import('../applicationInsights')
+    // Always reset the internal state for each test
+    applicationInsights.resetAppInsights()
   })
 
   afterEach(() => {
@@ -47,14 +53,13 @@ describe('applicationInsights', () => {
       consoleSpy.mockRestore()
     })
 
-    it('should initialize Application Insights with valid key', async () => {
-      const { ApplicationInsights } = await import('@microsoft/applicationinsights-web')
+    it('should initialize Application Insights with valid key', () => {
       const result = applicationInsights.initializeAppInsights('test-key-123')
       
-      expect(ApplicationInsights).toHaveBeenCalled()
       expect(mockLoadAppInsights).toHaveBeenCalled()
       expect(mockTrackPageView).toHaveBeenCalled()
       expect(result).toBeDefined()
+      expect(result).toBe(mockAppInsightsInstance)
     })
 
     it('should return existing instance if already initialized', () => {

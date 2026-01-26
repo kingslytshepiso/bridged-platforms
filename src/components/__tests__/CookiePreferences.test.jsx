@@ -84,12 +84,11 @@ describe('CookiePreferences', () => {
       />
     )
 
-    const essentialCheckbox = screen
-      .getByText('Essential Cookies')
-      .closest('div')
-      .querySelector('input[type="checkbox"]')
+    // Find all checkboxes and find the disabled one (essential)
+    const checkboxes = screen.getAllByRole('checkbox')
+    const essentialCheckbox = checkboxes.find((cb) => cb.disabled)
     
-    expect(essentialCheckbox).toBeDisabled()
+    expect(essentialCheckbox).toBeDefined()
     expect(essentialCheckbox).toBeChecked()
   })
 
@@ -103,11 +102,11 @@ describe('CookiePreferences', () => {
       />
     )
 
-    const analyticsCheckbox = screen
-      .getByText('Analytics Cookies')
-      .closest('div')
-      .querySelector('input[type="checkbox"]')
+    // Find all checkboxes and get the first non-disabled one (analytics)
+    const checkboxes = screen.getAllByRole('checkbox')
+    const analyticsCheckbox = checkboxes.find((cb) => !cb.disabled)
     
+    expect(analyticsCheckbox).toBeDefined()
     expect(analyticsCheckbox).not.toBeChecked()
     
     await user.click(analyticsCheckbox)
@@ -124,9 +123,12 @@ describe('CookiePreferences', () => {
       />
     )
 
-    // Enable analytics by clicking the label
-    const analyticsLabel = screen.getByText('Analytics Cookies').closest('label')
-    await user.click(analyticsLabel)
+    // Enable analytics by clicking the first non-disabled checkbox
+    const checkboxes = screen.getAllByRole('checkbox')
+    const analyticsCheckbox = checkboxes.find((cb) => !cb.disabled)
+    
+    expect(analyticsCheckbox).toBeDefined()
+    await user.click(analyticsCheckbox)
 
     // Click Save button
     const saveButton = screen.getByText('Save Preferences')

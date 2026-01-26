@@ -4,6 +4,14 @@ import { ApplicationInsights } from '@microsoft/applicationinsights-web'
 let appInsights = null
 
 /**
+ * Reset Application Insights instance (for testing purposes)
+ * @returns {void}
+ */
+export const resetAppInsights = () => {
+  appInsights = null
+}
+
+/**
  * Initialize Application Insights
  * @param {string} connectionStringOrKey - Azure Application Insights connection string or instrumentation key
  * @returns {ApplicationInsights | null} Initialized Application Insights instance or null

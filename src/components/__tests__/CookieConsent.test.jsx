@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { render, screen, act } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CookieConsent from '../CookieConsent'
 import * as cookieService from '../../services/cookieService'
@@ -40,7 +40,6 @@ Object.defineProperty(window, 'location', {
 describe('CookieConsent', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.useFakeTimers()
     cookieService.hasConsent.mockReturnValue(false)
     cookieService.getCookiePreferences.mockReturnValue({
       essential: true,
@@ -48,10 +47,6 @@ describe('CookieConsent', () => {
       marketing: false,
       functional: false,
     })
-  })
-
-  afterEach(() => {
-    vi.useRealTimers()
   })
 
   it('should not render when user has already given consent', () => {
@@ -66,40 +61,35 @@ describe('CookieConsent', () => {
     
     expect(screen.queryByText('Cookie Consent')).not.toBeInTheDocument()
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    // Wait for the setTimeout delay (1000ms)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Cookie Consent')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Cookie Consent')).toBeInTheDocument()
   })
 
   it('should display all consent buttons', async () => {
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Accept All')).toBeInTheDocument()
-      expect(screen.getByText('Reject All')).toBeInTheDocument()
-      expect(screen.getByText('Customize')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Accept All')).toBeInTheDocument()
+    expect(screen.getByText('Reject All')).toBeInTheDocument()
+    expect(screen.getByText('Customize')).toBeInTheDocument()
   })
 
   it('should handle Accept All button click', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Accept All')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Accept All')).toBeInTheDocument()
     
     const acceptButton = screen.getByText('Accept All')
     await user.click(acceptButton)
@@ -115,16 +105,14 @@ describe('CookieConsent', () => {
   })
 
   it('should handle Reject All button click', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Reject All')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Reject All')).toBeInTheDocument()
     
     const rejectButton = screen.getByText('Reject All')
     await user.click(rejectButton)
@@ -140,75 +128,61 @@ describe('CookieConsent', () => {
   })
 
   it('should show preferences modal when Customize is clicked', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Customize')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Customize')).toBeInTheDocument()
     
     const customizeButton = screen.getByText('Customize')
     await user.click(customizeButton)
     
-    await waitFor(() => {
-      expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
   })
 
   it('should show preferences modal when Learn more is clicked', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Learn more')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Learn more')).toBeInTheDocument()
     
     const learnMoreButton = screen.getByText('Learn more')
     await user.click(learnMoreButton)
     
-    await waitFor(() => {
-      expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
   })
 
   it('should display GDPR/POPIA compliance text', async () => {
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText(/GDPR and POPIA regulations/i)).toBeInTheDocument()
-    })
+    expect(screen.getByText(/GDPR and POPIA regulations/i)).toBeInTheDocument()
   })
 
   it('should reload page when analytics is enabled in preferences', async () => {
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     render(<CookieConsent />)
     
-    act(() => {
-      vi.advanceTimersByTime(1000)
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1100))
     })
     
-    await waitFor(() => {
-      expect(screen.getByText('Customize')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Customize')).toBeInTheDocument()
     
     const customizeButton = screen.getByText('Customize')
     await user.click(customizeButton)
     
-    await waitFor(() => {
-      expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
-    })
+    expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
     
     // Simulate saving preferences with analytics enabled
     const savePreferences = vi.fn((prefs) => {

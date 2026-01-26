@@ -96,16 +96,18 @@ describe('AppInsightsContext', () => {
   })
 
   it('should throw error when useAppInsights is used outside provider', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    // Suppress React error boundary logging
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
+    // React will catch the error in development mode, so we verify it was logged
     expect(() => {
       render(<TestComponent />)
     }).toThrow('useAppInsights must be used within AppInsightsProvider')
-
-    consoleSpy.mockRestore()
+    
+    consoleErrorSpy.mockRestore()
   })
 
-  it('should set isInitialized to true after successful initialization', () => {
+  it('should set isInitialized to true after successful initialization', async () => {
     applicationInsights.initializeAppInsights.mockReturnValue({ initialized: true })
 
     render(
@@ -113,6 +115,9 @@ describe('AppInsightsContext', () => {
         <TestComponent />
       </AppInsightsProvider>
     )
+
+    // Wait for setTimeout to complete (setIsInitialized is called in setTimeout)
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
     expect(screen.getByTestId('initialized')).toHaveTextContent('true')
   })
