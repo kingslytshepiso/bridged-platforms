@@ -48,13 +48,13 @@ const ServiceDetailDialog = ({ service, isOpen, onClose }) => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.3, ease: "easeOut" }}
-            className="fixed top-4 left-4 right-4 bottom-4 md:top-[5vh] md:left-auto md:right-auto md:bottom-auto md:h-[90vh] md:max-h-[90vh] z-[70] overflow-hidden rounded-2xl shadow-2xl flex flex-col bg-black"
+            className="fixed top-4 left-4 right-4 bottom-4 md:top-[5vh] md:left-0 md:right-0 md:bottom-auto md:h-[90vh] md:max-h-[90vh] z-[70] overflow-hidden rounded-2xl shadow-2xl flex flex-col bg-black"
             onClick={(e) => e.stopPropagation()}
             style={{ 
               maxWidth: 'min(56rem, calc(100vw - 2rem))',
               width: 'min(56rem, calc(100vw - 2rem))',
               marginLeft: 'auto',
-              marginRight: 'auto'
+              marginRight: 'auto',
             }}
           >
             {/* Close Button - Always visible */}
