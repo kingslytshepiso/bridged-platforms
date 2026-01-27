@@ -24,8 +24,7 @@
   "lint-staged": {
     "*.{js,jsx}": [
       "eslint --fix",
-      "vitest related --run",
-      "git add"
+      "vitest related --run"
     ]
   },
   "dependencies": {
