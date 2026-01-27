@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import React, { useState, useEffect } from 'react'
 import { hasConsent, setConsent, getCookiePreferences, setCookiePreferences, COOKIE_CATEGORIES } from '../services/cookieService'
+import { COOKIE_PREFERENCES_CHANGED_EVENT } from '../context/AppInsightsContext'
 import CookiePreferences from './CookiePreferences'
 
 const CookieConsent = () => {
@@ -28,10 +29,8 @@ const CookieConsent = () => {
     setCookiePreferences(allAccepted)
     setConsent(true)
     setShowBanner(false)
-    // Reload page to apply analytics if enabled
-    if (allAccepted[COOKIE_CATEGORIES.ANALYTICS]) {
-      window.location.reload()
-    }
+    // Dispatch event to notify AppInsightsContext to initialize analytics
+    window.dispatchEvent(new window.CustomEvent(COOKIE_PREFERENCES_CHANGED_EVENT))
   }
 
   const handleRejectAll = () => {
@@ -44,6 +43,8 @@ const CookieConsent = () => {
     setCookiePreferences(onlyEssential)
     setConsent(true)
     setShowBanner(false)
+    // Dispatch event to notify AppInsightsContext about preference change
+    window.dispatchEvent(new window.CustomEvent(COOKIE_PREFERENCES_CHANGED_EVENT))
   }
 
   const handleCustomize = () => {
@@ -56,10 +57,8 @@ const CookieConsent = () => {
     setConsent(true)
     setShowPreferences(false)
     setShowBanner(false)
-    // Reload page to apply analytics if enabled
-    if (newPreferences[COOKIE_CATEGORIES.ANALYTICS]) {
-      window.location.reload()
-    }
+    // Dispatch event to notify AppInsightsContext to initialize analytics if enabled
+    window.dispatchEvent(new window.CustomEvent(COOKIE_PREFERENCES_CHANGED_EVENT))
   }
 
   const handlePreferencesCancel = () => {

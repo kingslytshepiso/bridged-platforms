@@ -1,0 +1,153 @@
+name: Version and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on semantic version tags (e.g., v1.0.0, v1.2.3)
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - manual
+      manual_version:
+        description: 'Manual version (e.g., 1.2.3) - only used if version_type is manual'
+        required: false
+        type: string
+
+jobs:
+  version-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Determine version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ "${{ github.event.inputs.version_type }}" == "manual" ]; then
+              VERSION="${{ github.event.inputs.manual_version }}"
+            else
+              CURRENT_VERSION=$(node -p "require('./package.json').version")
+              VERSION_TYPE="${{ github.event.inputs.version_type }}"
+              VERSION=$(node -e "
+                const current = '$CURRENT_VERSION'.split('.');
+                const major = parseInt(current[0]);
+                const minor = parseInt(current[1]);
+                const patch = parseInt(current[2]);
+                const type = '$VERSION_TYPE';
+                if (type === 'major') {
+                  console.log((major + 1) + '.0.0');
+                } else if (type === 'minor') {
+                  console.log(major + '.' + (minor + 1) + '.0');
+                } else {
+                  console.log(major + '.' + minor + '.' + (patch + 1));
+                }
+              ")
+            fi
+          else
+            # Extract version from tag (remove 'v' prefix)
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Version determined: $VERSION"
+      
+      - name: Update package.json version
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          npm version ${{ steps.version.outputs.version }} --no-git-tag-version
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}" || echo "No changes to commit"
+      
+      - name: Create git tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          git push origin HEAD:${{ github.ref_name }}
+      
+      - name: Get changelog
+        id: changelog
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # Get previous tag
+            PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            if [ -z "$PREVIOUS_TAG" ]; then
+              # No previous tag, get all commits
+              CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            else
+              # Get commits since previous tag
+              CHANGELOG=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            fi
+          else
+            # For manual dispatch, get commits since last tag
+            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+            if [ -z "$LAST_TAG" ]; then
+              CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges -10)
+            else
+              CHANGELOG=$(git log ${LAST_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
+            fi
+          fi
+          
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG="- No changes detected"
+          fi
+          
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Build application
+        run: npm run build
+      
+      - name: Create release archive
+        run: |
+          cd dist
+          zip -r ../bridged-platforms-${{ steps.version.outputs.tag }}.zip .
+          cd ..
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## Release ${{ steps.version.outputs.tag }}
+            
+            ### Changes in this release:
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ---
+            *Automatically generated by GitHub Actions*
+          files: |
+            bridged-platforms-${{ steps.version.outputs.tag }}.zip
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

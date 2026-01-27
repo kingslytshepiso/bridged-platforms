@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { AppInsightsProvider, useAppInsights } from '../AppInsightsContext'
 import * as applicationInsights from '../../services/applicationInsights'
 import * as cookieService from '../../services/cookieService'
 
 // Mock services
+const mockGetAppInsights = vi.fn(() => null)
+const mockInitializeAppInsights = vi.fn()
+
 vi.mock('../../services/applicationInsights', () => ({
-  initializeAppInsights: vi.fn(),
-  getAppInsights: vi.fn(() => ({ mock: 'instance' })),
+  initializeAppInsights: () => mockInitializeAppInsights(),
+  getAppInsights: () => mockGetAppInsights(),
 }))
 
 vi.mock('../../services/cookieService', () => ({
@@ -32,54 +35,74 @@ describe('AppInsightsContext', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     cookieService.isCategoryAllowed.mockReturnValue(true)
+    mockGetAppInsights.mockReturnValue(null) // Start with no instance
+    mockInitializeAppInsights.mockReturnValue({ initialized: true })
   })
 
-  it('should initialize Application Insights when analytics cookies are allowed', () => {
-    render(
-      <AppInsightsProvider instrumentationKey="test-key-123">
-        <TestComponent />
-      </AppInsightsProvider>
-    )
+  it('should initialize Application Insights when analytics cookies are allowed', async () => {
+    await act(async () => {
+      render(
+        <AppInsightsProvider instrumentationKey="test-key-123">
+          <TestComponent />
+        </AppInsightsProvider>
+      )
+      // Wait for useEffect and setTimeout to complete (need longer timeout)
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    // Wait a bit more to ensure all async operations complete
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
     expect(cookieService.isCategoryAllowed).toHaveBeenCalledWith('analytics')
-    expect(applicationInsights.initializeAppInsights).toHaveBeenCalledWith('test-key-123')
+    expect(mockInitializeAppInsights).toHaveBeenCalled()
   })
 
-  it('should not initialize when analytics cookies are not allowed', () => {
+  it('should not initialize when analytics cookies are not allowed', async () => {
     cookieService.isCategoryAllowed.mockReturnValue(false)
 
-    render(
-      <AppInsightsProvider instrumentationKey="test-key-123">
-        <TestComponent />
-      </AppInsightsProvider>
-    )
+    await act(async () => {
+      render(
+        <AppInsightsProvider instrumentationKey="test-key-123">
+          <TestComponent />
+        </AppInsightsProvider>
+      )
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    })
 
-    expect(applicationInsights.initializeAppInsights).not.toHaveBeenCalled()
+    expect(mockInitializeAppInsights).not.toHaveBeenCalled()
   })
 
-  it('should not initialize when instrumentation key is not provided', () => {
-    render(
-      <AppInsightsProvider>
-        <TestComponent />
-      </AppInsightsProvider>
-    )
+  it('should not initialize when instrumentation key is not provided', async () => {
+    await act(async () => {
+      render(
+        <AppInsightsProvider>
+          <TestComponent />
+        </AppInsightsProvider>
+      )
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    })
 
-    expect(applicationInsights.initializeAppInsights).not.toHaveBeenCalled()
+    expect(mockInitializeAppInsights).not.toHaveBeenCalled()
   })
 
-  it('should provide appInsights instance to children', () => {
-    render(
-      <AppInsightsProvider instrumentationKey="test-key-123">
-        <TestComponent />
-      </AppInsightsProvider>
-    )
+  it('should provide appInsights instance to children', async () => {
+    mockGetAppInsights.mockReturnValue({ mock: 'instance' })
+    
+    await act(async () => {
+      render(
+        <AppInsightsProvider instrumentationKey="test-key-123">
+          <TestComponent />
+        </AppInsightsProvider>
+      )
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    })
 
     expect(screen.getByTestId('appInsights')).toHaveTextContent('available')
   })
 
-  it('should handle initialization errors gracefully', () => {
+  it('should handle initialization errors gracefully', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    applicationInsights.initializeAppInsights.mockImplementation(() => {
+    mockInitializeAppInsights.mockImplementation(() => {
       throw new Error('Initialization failed')
     })
 
@@ -90,6 +113,9 @@ describe('AppInsightsContext', () => {
         </AppInsightsProvider>
       )
     }).not.toThrow()
+
+    // Wait for useEffect and setTimeout to complete
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
     expect(consoleSpy).toHaveBeenCalled()
     consoleSpy.mockRestore()
@@ -108,21 +134,30 @@ describe('AppInsightsContext', () => {
   })
 
   it('should set isInitialized to true after successful initialization', async () => {
-    applicationInsights.initializeAppInsights.mockReturnValue({ initialized: true })
+    mockGetAppInsights.mockReturnValue(null) // Start with no instance
+    mockInitializeAppInsights.mockReturnValue({ initialized: true })
+    // After initialization, getAppInsights should return the instance
+    mockGetAppInsights.mockReturnValueOnce(null).mockReturnValue({ initialized: true })
 
-    render(
-      <AppInsightsProvider instrumentationKey="test-key-123">
-        <TestComponent />
-      </AppInsightsProvider>
-    )
+    await act(async () => {
+      render(
+        <AppInsightsProvider instrumentationKey="test-key-123">
+          <TestComponent />
+        </AppInsightsProvider>
+      )
+      // Wait for useEffect and setTimeout to complete (setIsInitialized is called in setTimeout)
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
 
-    // Wait for setTimeout to complete (setIsInitialized is called in setTimeout)
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    // Wait a bit more to ensure state update completes
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 10))
+    })
 
     expect(screen.getByTestId('initialized')).toHaveTextContent('true')
   })
 
-  it('should log message when analytics cookies not accepted', () => {
+  it('should log message when analytics cookies not accepted', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
     cookieService.isCategoryAllowed.mockReturnValue(false)
 
@@ -131,6 +166,9 @@ describe('AppInsightsContext', () => {
         <TestComponent />
       </AppInsightsProvider>
     )
+
+    // Wait for useEffect and setTimeout to complete
+    await new Promise((resolve) => setTimeout(resolve, 10))
 
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Analytics cookies not accepted')

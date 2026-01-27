@@ -2,7 +2,8 @@ import { motion, useInView } from "framer-motion";
 import React, { useRef, useState, useEffect } from "react";
 import { HiBolt, HiGlobeAlt } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
-import { trackContactForm, trackPageView } from "../services/applicationInsights";
+import { trackContactForm, trackPageView, trackException } from "../services/applicationInsights";
+import { logError, logWarning } from "../utils/logger";
 
 const Contact = () => {
   const ref = useRef(null);
@@ -59,13 +60,19 @@ const Contact = () => {
           if (FUNCTION_KEY.includes("%")) {
             decodedKey = decodeURIComponent(FUNCTION_KEY);
           }
-        } catch {
+        } catch (decodeError) {
           // If decoding fails, use original key
+          logWarning("Failed to decode function key, using original", { error: decodeError });
           decodedKey = FUNCTION_KEY;
         }
-        const url = new URL(requestUrl);
-        url.searchParams.set("code", decodedKey);
-        requestUrl = url.toString();
+        try {
+          const url = new URL(requestUrl);
+          url.searchParams.set("code", decodedKey);
+          requestUrl = url.toString();
+        } catch (urlError) {
+          logError("Failed to build request URL", urlError, { apiUrl: API_URL });
+          throw new Error("Invalid API URL configuration");
+        }
       }
 
       const response = await fetch(requestUrl, {
@@ -74,7 +81,16 @@ const Contact = () => {
         body: JSON.stringify(formData),
       });
 
-      const result = await response.json();
+      let result;
+      try {
+        result = await response.json();
+      } catch (jsonError) {
+        logError("Failed to parse response as JSON", jsonError, {
+          status: response.status,
+          statusText: response.statusText,
+        });
+        throw new Error("Invalid response from server");
+      }
 
       if (response.ok) {
         setStatus({
@@ -90,14 +106,34 @@ const Contact = () => {
           setStatus({ type: null, message: "" });
         }, 5000);
       } else {
-        trackContactForm('error', { error: result.error });
+        const errorMessage = result.error || "Failed to send message. Please try again.";
+        logError("Contact form submission failed", new Error(errorMessage), {
+          status: response.status,
+          statusText: response.statusText,
+          responseData: result,
+        });
+        trackContactForm('error', { error: errorMessage });
+        trackException(new Error(errorMessage), {
+          component: 'Contact',
+          action: 'submit',
+          statusCode: response.status,
+        });
         setStatus({
           type: "error",
-          message: result.error || "Failed to send message. Please try again.",
+          message: errorMessage,
         });
       }
     } catch (error) {
+      logError("Contact form network error", error, {
+        apiUrl: API_URL,
+        formData: { name: formData.name, email: formData.email, hasMessage: !!formData.message },
+      });
       trackContactForm('error', { error: error.message });
+      trackException(error, {
+        component: 'Contact',
+        action: 'submit',
+        errorType: error.name || 'NetworkError',
+      });
       setStatus({
         type: "error",
         message: "Network error. Please check your connection and try again.",

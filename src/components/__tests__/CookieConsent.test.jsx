@@ -30,12 +30,9 @@ vi.mock('../../services/cookieService', () => ({
   },
 }))
 
-// Mock window.location.reload
-const mockReload = vi.fn()
-Object.defineProperty(window, 'location', {
-  value: { reload: mockReload },
-  writable: true,
-})
+// Mock window.CustomEvent and dispatchEvent
+const mockDispatchEvent = vi.fn()
+window.dispatchEvent = mockDispatchEvent
 
 describe('CookieConsent', () => {
   beforeEach(() => {
@@ -101,7 +98,12 @@ describe('CookieConsent', () => {
       functional: true,
     })
     expect(cookieService.setConsent).toHaveBeenCalledWith(true)
-    expect(mockReload).toHaveBeenCalled()
+    // Verify custom event is dispatched instead of page reload
+    expect(mockDispatchEvent).toHaveBeenCalled()
+    const eventCall = mockDispatchEvent.mock.calls.find(call => 
+      call[0]?.type === 'cookiePreferencesChanged'
+    )
+    expect(eventCall).toBeDefined()
   })
 
   it('should handle Reject All button click', async () => {
@@ -124,7 +126,12 @@ describe('CookieConsent', () => {
       functional: false,
     })
     expect(cookieService.setConsent).toHaveBeenCalledWith(true)
-    expect(mockReload).not.toHaveBeenCalled()
+    // Verify custom event is dispatched instead of page reload
+    expect(mockDispatchEvent).toHaveBeenCalled()
+    const eventCall = mockDispatchEvent.mock.calls.find(call => 
+      call[0]?.type === 'cookiePreferencesChanged'
+    )
+    expect(eventCall).toBeDefined()
   })
 
   it('should show preferences modal when Customize is clicked', async () => {
@@ -169,7 +176,7 @@ describe('CookieConsent', () => {
     expect(screen.getByText(/GDPR and POPIA regulations/i)).toBeInTheDocument()
   })
 
-  it('should reload page when analytics is enabled in preferences', async () => {
+  it('should dispatch event when analytics is enabled in preferences', async () => {
     const user = userEvent.setup()
     render(<CookieConsent />)
     
@@ -184,23 +191,25 @@ describe('CookieConsent', () => {
     
     expect(screen.getByText('Cookie Preferences')).toBeInTheDocument()
     
-    // Simulate saving preferences with analytics enabled
-    const savePreferences = vi.fn((prefs) => {
-      cookieService.setCookiePreferences(prefs)
-      cookieService.setConsent(true)
-      if (prefs.analytics) {
-        mockReload()
-      }
-    })
+    // Find analytics checkbox by finding the section with "Analytics Cookies" heading
+    const analyticsSection = screen.getByText('Analytics Cookies').closest('div')
+    const analyticsCheckbox = analyticsSection?.querySelector('input[type="checkbox"]')
     
-    // This would be called from CookiePreferences component
-    savePreferences({
-      essential: true,
-      analytics: true,
-      marketing: false,
-      functional: false,
-    })
+    if (analyticsCheckbox && !analyticsCheckbox.checked) {
+      await user.click(analyticsCheckbox)
+    }
     
-    expect(mockReload).toHaveBeenCalled()
+    // Find and click the save button in the preferences modal
+    const saveButton = screen.getByRole('button', { name: /save preferences/i })
+    await user.click(saveButton)
+    
+    // Verify preferences are saved and event is dispatched
+    expect(cookieService.setCookiePreferences).toHaveBeenCalled()
+    expect(cookieService.setConsent).toHaveBeenCalledWith(true)
+    expect(mockDispatchEvent).toHaveBeenCalled()
+    const eventCall = mockDispatchEvent.mock.calls.find(call => 
+      call[0]?.type === 'cookiePreferencesChanged'
+    )
+    expect(eventCall).toBeDefined()
   })
 })

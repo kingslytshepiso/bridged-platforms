@@ -51,6 +51,12 @@ export default [
     },
   },
   {
+    files: ['scripts/**/*.js'],
+    rules: {
+      'no-console': 'off', // Allow console.log in CLI scripts
+    },
+  },
+  {
     ignores: ['dist/**', 'node_modules/**', '*.config.js'],
   },
 ];
