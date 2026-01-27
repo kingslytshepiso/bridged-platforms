@@ -1,15 +1,23 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { ThemeProvider } from '../../context/ThemeContext'
-import Services from '../Services'
 
 // Mock framer-motion
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className }) => <div className={className}>{children}</div>,
+    div: ({ children, className, ...props }) => <div className={className} {...props}>{children}</div>,
+    span: ({ children, className, ...props }) => <span className={className} {...props}>{children}</span>,
   },
   useInView: () => ({ ref: { current: null }, isInView: true }),
+  AnimatePresence: ({ children }) => children,
 }))
+
+// Mock ServiceDetailDialog
+vi.mock('../ServiceDetailDialog', () => ({
+  default: () => null,
+}))
+
+import Services from '../Services'
 
 describe('Services', () => {
   it('should render services section title', () => {

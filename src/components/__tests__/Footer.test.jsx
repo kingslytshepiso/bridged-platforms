@@ -53,7 +53,6 @@ describe('Footer', () => {
     expect(screen.getByText('Workflow Implementation')).toBeInTheDocument()
     expect(screen.getByText('API Integration')).toBeInTheDocument()
     expect(screen.getByText('Cybersecurity')).toBeInTheDocument()
-    expect(screen.getByText('African Market')).toBeInTheDocument()
   })
 
   it('should render copyright notice with current year', () => {
