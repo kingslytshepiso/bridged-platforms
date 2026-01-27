@@ -129,6 +129,29 @@ When you commit, the pre-commit hook will:
 3. Run unit tests for related files
 4. Prevent commit if there are unfixable errors or failing tests
 
+### Versioning
+
+The project uses semantic versioning (SemVer) with automated GitHub releases. See [Versioning Guide](docs/VERSIONING.md) for detailed information.
+
+**Quick version commands:**
+```bash
+# Check current version
+npm run version:current
+
+# Bump patch version (1.0.0 → 1.0.1)
+npm run version:patch
+
+# Bump minor version (1.0.0 → 1.1.0)
+npm run version:minor
+
+# Bump major version (1.0.0 → 2.0.0)
+npm run version:major
+```
+
+**Creating releases:**
+- Use GitHub Actions workflow: Go to Actions > Version and Release > Run workflow
+- Or create tags manually: `git tag -a vX.Y.Z -m "Release vX.Y.Z"` and push
+
 ## Project Structure
 
 ```
@@ -149,7 +172,10 @@ bridged-platforms/
 │   ├── main.jsx            # React entry point
 │   └── index.css           # Global styles and Tailwind imports
 ├── docs/
-│   └── API_INTEGRATION.md  # API integration documentation
+│   ├── API_INTEGRATION.md  # API integration documentation
+│   └── VERSIONING.md       # Versioning and release guide
+├── scripts/
+│   └── version-bump.js     # Version bump utility script
 ├── index.html              # HTML template
 ├── package.json            # Dependencies and scripts
 ├── tailwind.config.js      # Tailwind configuration with dark mode

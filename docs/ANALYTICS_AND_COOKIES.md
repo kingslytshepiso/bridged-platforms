@@ -178,7 +178,7 @@ The cookie consent system provides:
 3. **Preference Management**:
    - Users can access preferences via "Learn more" link
    - Preferences can be changed at any time
-   - Changes require page reload for analytics
+   - Analytics initialize dynamically without page reload (smooth UX)
 
 ### Implementation Details
 
@@ -249,7 +249,8 @@ const preferences = getCookiePreferences()
 
 1. **Check Instrumentation Key**:
    ```bash
-   # Verify .env file has VITE_APPINSIGHTS_KEY set
+   # Verify .env file has VITE_APPINSIGHTS_KEY set (for local)
+   # Or check GitHub Secrets (for Azure Static Web Apps)
    ```
 
 2. **Check Cookie Consent**:
@@ -261,6 +262,61 @@ const preferences = getCookiePreferences()
    import { getAppInsights } from '../services/applicationInsights'
    console.log(getAppInsights()) // Should not be null
    ```
+
+### Azure Static Web Apps Deployment Issues
+
+If Application Insights is not working after deployment to Azure Static Web Apps:
+
+1. **Verify GitHub Secret is Set**:
+   - Go to GitHub repository > Settings > Secrets and variables > Actions
+   - Ensure `VITE_APPINSIGHTS_KEY` secret exists
+   - Verify the secret value matches your connection string or instrumentation key
+   - **Important**: Secret name must be exactly `VITE_APPINSIGHTS_KEY` (case-sensitive)
+
+2. **Check GitHub Actions Workflow**:
+   - Verify the workflow file (`.github/workflows/azure-static-web-apps-*.yml`) includes:
+     ```yaml
+     env:
+       VITE_APPINSIGHTS_KEY: ${{ secrets.VITE_APPINSIGHTS_KEY }}
+     ```
+   - Check GitHub Actions logs to ensure the build completed successfully
+   - Look for any errors related to environment variables
+
+3. **Verify Build-Time Embedding**:
+   - Vite embeds environment variables at **build time**, not runtime
+   - The variable must be available during the GitHub Actions build
+   - Check the built files in `dist/` to verify the variable was embedded:
+     ```bash
+     # After build, check if the value appears in the built JS files
+     grep -r "VITE_APPINSIGHTS_KEY" dist/
+     ```
+
+4. **Clear Browser Cache**:
+   - Hard refresh (Ctrl+Shift+R or Cmd+Shift+R)
+   - Clear browser cache and cookies
+   - Try incognito/private mode
+
+5. **Check Browser Console**:
+   - Open browser DevTools > Console
+   - Look for messages like:
+     - "Application Insights: No connection string or instrumentation key provided"
+     - "Application Insights: Analytics cookies not accepted"
+   - These messages indicate the issue
+
+6. **Verify Secret Format**:
+   - Connection string format: `InstrumentationKey=xxx;IngestionEndpoint=https://xxx.in.applicationinsights.azure.com/;...`
+   - Or just instrumentation key: `your-instrumentation-key-here`
+   - Ensure no extra spaces or quotes in the GitHub secret value
+
+7. **Redeploy After Secret Addition**:
+   - After adding/updating the GitHub secret, trigger a new deployment:
+     - Push a new commit to `main` branch, OR
+     - Re-run the failed workflow in GitHub Actions
+
+8. **Check Azure Portal Configuration** (Optional):
+   - Azure Portal > Static Web Apps > Your App > Configuration
+   - Add application setting `VITE_APPINSIGHTS_KEY` if needed
+   - Note: This is usually not required for Vite apps as variables are embedded at build time
 
 ### Cookie Consent Not Showing
 
