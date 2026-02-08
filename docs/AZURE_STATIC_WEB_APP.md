@@ -37,6 +37,31 @@ These are passed to the workflow from the secrets above and used during `vite bu
 2. Copy the **deployment token** from **Overview → Manage deployment token** and in GitHub **Settings → Secrets and variables → Actions** add or update `AZURE_STATIC_WEB_APPS_API_TOKEN` with that value.
 3. Keep `VITE_API_URL`, `VITE_FUNCTION_KEY`, and `VITE_APPINSIGHTS_KEY` as needed for the new environment.
 
+## Configuration we added (and relation to InternalServerError)
+
+Summary of what was added in this repo and how it might relate to the “content server has rejected the request with: InternalServerError” and the `swa-db-connections` log line.
+
+| What we added | Where | Could it cause the error? |
+|---------------|--------|----------------------------|
+| **api_location: "api"** | Workflow | We point to the `api` folder (Node.js Azure Functions for the health endpoint). The error log shows Azure validating `/github/workspace/swa-db-connections`. That path is for **Data API / Database connections**, which is a different feature. We do **not** use or set Data API. So our `api_location` is for the **Functions API** only. The backend may still run a `swa-db-connections` check when the **Static Web App resource in Azure** has “Database connections” or “Data API” enabled in the portal. |
+| **api/** folder | Repo (Node.js health function) | Same as above: this is the Functions API, not the Data API. No `staticwebapp.database.config.json` or `swa-db-connections` folder was added. |
+| **staticwebapp.config.json** | `public/` (copied to `dist/`) | Contains routes, navigationFallback, globalHeaders, responseOverrides, and **platform.apiRuntime: "node:20"**. None of these refer to database or Data API. Unlikely to be the cause. |
+| **staticwebapp.config.json** (404 → index.html) | Same file | SPA fallback only. Not related to Data API or backend validation. |
+
+**Conclusion:** The failure is **not** caused by Database connections (the resource can have `databaseConnections: []` and the backend may still log `swa-db-connections`).
+
+**You can’t edit build settings in the Azure Portal**
+
+For GitHub-connected Static Web Apps, **build settings are not editable in the portal** after creation. The “Configuration” blade may only show options like Password protection and Preview environments; there is no UI for App location, Api location, or App artifact location. Those values are **taken from the workflow file** on each deployment. So the source of truth is [`.github/workflows/azure-static-web-apps.yml`](../.github/workflows/azure-static-web-apps.yml), which already has:
+
+- `app_location: "/"`
+- `api_location: "api"`
+- `output_location: "dist"`
+
+Azure uses these workflow values when the action runs. If the portal (or an API response) shows different values (e.g. Api location empty, App artifact `build`), that’s often leftover from creation and doesn’t override the workflow. So no change is needed in the repo for build paths.
+
+If InternalServerError continues, try: **reset the deployment token** (Manage deployment token → Reset, then update the GitHub secret), **create a new Static Web App** and use its token, or **report the issue** to [Azure/static-web-apps](https://github.com/Azure/static-web-apps/issues) with the DeploymentId and run URL.
+
 ## Troubleshooting
 
 ### "deployment_token was not provided"
@@ -48,13 +73,11 @@ The deploy step requires the deployment token. Add it as a repository secret:
 3. Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`, Value: the token you copied.
 4. Re-run the failed workflow (or push a new commit).
 
-To allow the workflow to succeed **without** deploying when the token is missing (e.g. CI-only), you can set `SKIP_DEPLOY_ON_MISSING_SECRETS: true` in the `env` of the "Build And Deploy" step in the workflow. Deployment will be skipped until the secret is set.
-
 ### InternalServerError / "content server has rejected the request" / "swa-db-connections"
 
 If the deploy step fails with an internal error or a message about the deployment token:
 
-1. **Use the debugging step** – The workflow includes a "Deployment debugging (pre-deploy)" step. In the run log, check:
+1. **Check the "Log deploy failure context" step** – On failure, this step outputs `outcome`, `conclusion`, `static_web_app_url`, `run_id`, and `run_url` so you can understand what failed. Ensure `AZURE_STATIC_WEB_APPS_API_TOKEN` is set in GitHub Secrets. In the run log, check:
    - **Workflow file** – Should show `azure-static-web-apps.yml`. If Azure Portal still shows an old workflow name (e.g. `azure-static-web-apps-gentle-beach-00be72703.yml`), the run might be coming from that file if it still exists in the repo. This repo uses only `.github/workflows/azure-static-web-apps.yml`.
    - **AZURE_STATIC_WEB_APPS_API_TOKEN** – Should say "set (non-empty)". If it says "MISSING or empty", add or update the secret as above.
    - **Workspace layout** – Confirms `app_location: "/"` and `api_location: "api"` exist. The path `swa-db-connections` is sometimes checked by Azure’s backend; it’s not required in this repo and can be ignored if the rest of the layout is correct.
@@ -65,7 +88,7 @@ If the deploy step fails with an internal error or a message about the deploymen
 
 ### Debugging shows workflow OK, layout OK, token set – but still InternalServerError
 
-If the “Deployment debugging (pre-deploy)” step shows the correct workflow file, workspace layout, and **AZURE_STATIC_WEB_APPS_API_TOKEN: set**, the failure is happening **on Azure’s side** after the action uploads (e.g. “The content server has rejected the request with: InternalServerError”). The `swa-db-connections` path in the log is checked by Azure’s backend; this repo does not use it and that is expected.
+If “Log deploy failure context” AZURE_STATIC_WEB_APPS_API_TOKEN secret is set and the failure is happening **on Azure’s side** after the action uploads (e.g. “The content server has rejected the request with: InternalServerError”). The `swa-db-connections` path in the log is checked by Azure’s backend; this repo does not use it and that is expected.
 
 Try in this order:
 
@@ -78,8 +101,11 @@ Try in this order:
 3. **Check SWA configuration in Azure**  
    In the Static Web App resource, review **Configuration** / **Settings** and any “Database” or “Connections” options. If the app was set up with features that expect a different repo layout (e.g. database connections), try disabling or reconfiguring them if you don’t need them, then redeploy.
 
-4. **Azure service issues**  
-   Check [Azure Status](https://status.azure.com/) for Static Web Apps. If the problem continues with a fresh token and correct app, consider opening an issue at [azure/static-web-apps](https://github.com/Azure/static-web-apps/issues) with the DeploymentId and error message from the run.
+4. **Create a new Static Web App (if the error persists)**  
+   Sometimes the existing SWA gets into a bad state. Create a **new** Static Web App in the same resource group (or subscription), connect it to this GitHub repo and `main` branch, then copy the new app’s deployment token and set it as `AZURE_STATIC_WEB_APPS_API_TOKEN`. Delete or leave the old SWA as needed.
+
+5. **Report to Azure**  
+   Check [Azure Status](https://status.azure.com/) for Static Web Apps. If the problem continues after the steps above, open an issue at [Azure/static-web-apps](https://github.com/Azure/static-web-apps/issues) and include: the **DeploymentId** from the error (e.g. `e4ca23f4-6f7a-451e-81b2-43722e71258a`), the **run URL** from the “Log deploy failure context” step, and the full error message (“The content server has rejected the request with: InternalServerError”).
 
 ## Build configuration (in the workflow)
 
