@@ -63,6 +63,24 @@ If the deploy step fails with an internal error or a message about the deploymen
 
 3. **Azure still using an old workflow file** – GitHub runs whatever workflow files exist in the repo on push/PR. If you renamed or replaced the workflow (e.g. to `azure-static-web-apps.yml`), ensure the old file is deleted and that only the new workflow triggers on `main`. In Azure Portal, under the Static Web App’s deployment/build settings, if there is a field for “Workflow file” or “GitHub workflow”, set it to the filename you use (e.g. `azure-static-web-apps.yml`) if the portal allows editing; otherwise the link is by repo + branch, and the workflow that runs is the one in the repo.
 
+### Debugging shows workflow OK, layout OK, token set – but still InternalServerError
+
+If the “Deployment debugging (pre-deploy)” step shows the correct workflow file, workspace layout, and **AZURE_STATIC_WEB_APPS_API_TOKEN: set**, the failure is happening **on Azure’s side** after the action uploads (e.g. “The content server has rejected the request with: InternalServerError”). The `swa-db-connections` path in the log is checked by Azure’s backend; this repo does not use it and that is expected.
+
+Try in this order:
+
+1. **Reset the deployment token and update the secret**  
+   Azure Portal → your Static Web App → **Overview** → **Manage deployment token** → **Reset token**. Copy the new token, update the `AZURE_STATIC_WEB_APPS_API_TOKEN` repository secret in GitHub, then re-run the workflow. A stale or mismatched token can cause backend errors even when the secret is “set”.
+
+2. **Confirm the token is for this Static Web App**  
+   If you have multiple SWAs or recreated the app, ensure the secret’s value is the token from the **same** SWA you want to deploy to (the one whose URL you expect the site on).
+
+3. **Check SWA configuration in Azure**  
+   In the Static Web App resource, review **Configuration** / **Settings** and any “Database” or “Connections” options. If the app was set up with features that expect a different repo layout (e.g. database connections), try disabling or reconfiguring them if you don’t need them, then redeploy.
+
+4. **Azure service issues**  
+   Check [Azure Status](https://status.azure.com/) for Static Web Apps. If the problem continues with a fresh token and correct app, consider opening an issue at [azure/static-web-apps](https://github.com/Azure/static-web-apps/issues) with the DeploymentId and error message from the run.
+
 ## Build configuration (in the workflow)
 
 | Setting | Value | Meaning |
