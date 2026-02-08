@@ -1,0 +1,92 @@
+# Azure Static Web Apps – build and deploy
+#
+# Deployment authorization (choose one when creating the SWA in Azure):
+#
+#   • Deployment token – Azure gives you a token; add it as a repo secret and use it below.
+#   • GitHub          – Uses OIDC (no deployment token secret). Workflow requests an id token
+#                        and passes github_id_token; you do NOT need AZURE_STATIC_WEB_APPS_API_TOKEN.
+#
+# Required GitHub repository secrets (Settings → Secrets and variables → Actions):
+#   AZURE_STATIC_WEB_APPS_API_TOKEN  - Only if you chose "Deployment token". From Azure: SWA → Manage deployment token.
+#   VITE_API_URL                     - Contact form API endpoint (e.g. https://<function-app>.azurewebsites.net/api/ContactForm)
+#   VITE_FUNCTION_KEY                - Azure Function key for ContactForm (optional for local; required for production)
+#   VITE_APPINSIGHTS_KEY             - Application Insights connection string or instrumentation key (optional)
+#
+# GITHUB_TOKEN is provided automatically; used for PR comments.
+
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  build_and_deploy_job:
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.event.action != 'closed' && github.base_ref == 'main')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+          lfs: false
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Get GitHub OIDC token (for GitHub deployment authorization)
+        if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
+        id: idtoken
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken();
+            core.setOutput('token', token);
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        env:
+          NODE_VERSION: "20"
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+          VITE_FUNCTION_KEY: ${{ secrets.VITE_FUNCTION_KEY }}
+          VITE_APPINSIGHTS_KEY: ${{ secrets.VITE_APPINSIGHTS_KEY }}
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          github_id_token: ${{ steps.idtoken.outputs.token }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: "api"
+          output_location: "dist"
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Get GitHub OIDC token (for GitHub deployment authorization)
+        id: idtoken
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const token = await core.getIDToken();
+            core.setOutput('token', token);
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          github_id_token: ${{ steps.idtoken.outputs.token }}
+          action: "close"
+          app_location: "/"

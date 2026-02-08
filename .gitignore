@@ -17,6 +17,9 @@ dist-ssr
 .env.local
 .env.production
 
+# Azure Functions local settings (api folder)
+api/local.settings.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

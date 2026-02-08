@@ -2,8 +2,9 @@ import { motion, useInView } from "framer-motion";
 import React, { useRef, useState, useEffect } from "react";
 import { HiBolt, HiGlobeAlt } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
+import { submitContactForm } from "../api/contact";
 import { trackContactForm, trackPageView, trackException } from "../services/applicationInsights";
-import { logError, logWarning } from "../utils/logger";
+import { logError } from "../utils/logger";
 
 const Contact = () => {
   const ref = useRef(null);
@@ -26,106 +27,27 @@ const Contact = () => {
     }
   }, [isInView]);
 
-  // API endpoint - defaults to localhost for development
-  // Set VITE_API_URL environment variable for production
-  const API_URL =
-    import.meta.env.VITE_API_URL || "http://localhost:7071/api/ContactForm";
-
-  // Azure Function Key for authentication
-  // Set VITE_FUNCTION_KEY environment variable
-  // For local dev, Azure Functions Core Tools provides a default key
-  // For production, get the key from Azure Portal > Function > Function Keys
-  const FUNCTION_KEY = import.meta.env.VITE_FUNCTION_KEY || "";
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "loading", message: "Sending message..." });
     trackContactForm('submitted', { hasName: !!formData.name, hasEmail: !!formData.email });
 
     try {
-      const headers = {
-        "Content-Type": "application/json",
-      };
+      await submitContactForm(formData);
 
-      // Build URL with code parameter for authentication
-      let requestUrl = API_URL;
-      if (FUNCTION_KEY) {
-        // Append code as query parameter
-        // Decode the function key first to avoid double-encoding
-        // (searchParams.set() will encode it properly)
-        // Try to decode, but if it fails (not encoded), use original
-        let decodedKey = FUNCTION_KEY;
-        try {
-          // Check if it looks URL-encoded (contains %)
-          if (FUNCTION_KEY.includes("%")) {
-            decodedKey = decodeURIComponent(FUNCTION_KEY);
-          }
-        } catch (decodeError) {
-          // If decoding fails, use original key
-          logWarning("Failed to decode function key, using original", { error: decodeError });
-          decodedKey = FUNCTION_KEY;
-        }
-        try {
-          const url = new URL(requestUrl);
-          url.searchParams.set("code", decodedKey);
-          requestUrl = url.toString();
-        } catch (urlError) {
-          logError("Failed to build request URL", urlError, { apiUrl: API_URL });
-          throw new Error("Invalid API URL configuration");
-        }
-      }
-
-      const response = await fetch(requestUrl, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(formData),
+      setStatus({
+        type: "success",
+        message:
+          "Thank you! Your message has been sent successfully. We'll get back to you soon.",
       });
-
-      let result;
-      try {
-        result = await response.json();
-      } catch (jsonError) {
-        logError("Failed to parse response as JSON", jsonError, {
-          status: response.status,
-          statusText: response.statusText,
-        });
-        throw new Error("Invalid response from server");
-      }
-
-      if (response.ok) {
-        setStatus({
-          type: "success",
-          message:
-            "Thank you! Your message has been sent successfully. We'll get back to you soon.",
-        });
-        trackContactForm('success');
-        setFormData({ name: "", email: "", message: "" });
-        setFormStarted(false);
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          setStatus({ type: null, message: "" });
-        }, 5000);
-      } else {
-        const errorMessage = result.error || "Failed to send message. Please try again.";
-        logError("Contact form submission failed", new Error(errorMessage), {
-          status: response.status,
-          statusText: response.statusText,
-          responseData: result,
-        });
-        trackContactForm('error', { error: errorMessage });
-        trackException(new Error(errorMessage), {
-          component: 'Contact',
-          action: 'submit',
-          statusCode: response.status,
-        });
-        setStatus({
-          type: "error",
-          message: errorMessage,
-        });
-      }
+      trackContactForm('success');
+      setFormData({ name: "", email: "", message: "" });
+      setFormStarted(false);
+      setTimeout(() => {
+        setStatus({ type: null, message: "" });
+      }, 5000);
     } catch (error) {
-      logError("Contact form network error", error, {
-        apiUrl: API_URL,
+      logError("Contact form request error", error, {
         formData: { name: formData.name, email: formData.email, hasMessage: !!formData.message },
       });
       trackContactForm('error', { error: error.message });
@@ -134,10 +56,11 @@ const Contact = () => {
         action: 'submit',
         errorType: error.name || 'NetworkError',
       });
-      setStatus({
-        type: "error",
-        message: "Network error. Please check your connection and try again.",
-      });
+      const message =
+        error.message === "Failed to fetch" || error.message.includes("Network")
+          ? "Network error. Please check your connection and try again."
+          : error.message;
+      setStatus({ type: "error", message });
     }
   };
 
