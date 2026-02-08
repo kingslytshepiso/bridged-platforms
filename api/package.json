@@ -1,0 +1,12 @@
+{
+  "name": "bridged-platforms-api",
+  "version": "1.0.0",
+  "description": "Minimal API for Azure Static Web Apps (enables App Insights)",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.0.0"
+  }
+}

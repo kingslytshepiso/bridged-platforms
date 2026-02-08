@@ -57,6 +57,18 @@ export default [
     },
   },
   {
+    files: ['api/**/*.js'],
+    languageOptions: {
+      sourceType: 'commonjs',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+      },
+    },
+  },
+  {
     ignores: ['dist/**', 'node_modules/**', '*.config.js'],
   },
 ];
