@@ -1,17 +1,13 @@
 # Azure Static Web Apps – build and deploy
 #
-# Deployment authorization (choose one when creating the SWA in Azure):
-#
-#   • Deployment token – Azure gives you a token; add it as a repo secret and use it below.
-#   • GitHub          – Uses OIDC (no deployment token secret). Workflow requests an id token
-#                        and passes github_id_token; you do NOT need AZURE_STATIC_WEB_APPS_API_TOKEN.
-#
 # Required GitHub repository secrets (Settings → Secrets and variables → Actions):
-#   AZURE_STATIC_WEB_APPS_API_TOKEN  - Only if you chose "Deployment token". From Azure: SWA → Manage deployment token.
+#   AZURE_STATIC_WEB_APPS_API_TOKEN  - REQUIRED. Deployment token from Azure: Static Web App → Overview → Manage deployment token → copy.
 #   VITE_API_URL                     - Contact form API endpoint (e.g. https://<function-app>.azurewebsites.net/api/ContactForm)
 #   VITE_FUNCTION_KEY                - Azure Function key for ContactForm (optional for local; required for production)
 #   VITE_APPINSIGHTS_KEY             - Application Insights connection string or instrumentation key (optional)
 #
+# Without AZURE_STATIC_WEB_APPS_API_TOKEN you get "deployment_token was not provided". To let the workflow
+# run without deploying (e.g. CI-only), set env SKIP_DEPLOY_ON_MISSING_SECRETS: true in the deploy step.
 # GITHUB_TOKEN is provided automatically; used for PR comments.
 
 name: Azure Static Web Apps CI/CD

@@ -7,30 +7,15 @@ This doc lists the GitHub Actions workflow and the environment variables / secre
 - **File:** [`.github/workflows/azure-static-web-apps.yml`](../.github/workflows/azure-static-web-apps.yml)
 - **Triggers:** Push and pull requests targeting the `main` branch.
 
-The workflow supports **both** deployment authorization methods (chosen when you create the Static Web App in Azure).
-
----
-
-## Deployment authorization: GitHub vs Deployment token
-
-When you create the Azure Static Web App, you choose how deployment is authorized:
-
-| Option | What it means | What you need in GitHub |
-|--------|----------------|--------------------------|
-| **GitHub** | Azure trusts your repo via OpenID Connect (OIDC). No long‑lived deployment token. | **No** `AZURE_STATIC_WEB_APPS_API_TOKEN` secret. The workflow requests an OIDC token and passes `github_id_token` to the deploy action. |
-| **Deployment token** | Azure gives you a static token; the workflow sends it to authorize the deploy. | **Yes.** Add a repo secret `AZURE_STATIC_WEB_APPS_API_TOKEN` and set it to the value from Azure (**Manage deployment token**). |
-
-The same workflow file is used for both: it always sends `github_id_token` (for GitHub auth) and, if present, `AZURE_STATIC_WEB_APPS_API_TOKEN` (for token auth). If you used **GitHub** when creating the SWA, you do **not** need to create or store the deployment token secret.
-
 ---
 
 ## Required GitHub repository secrets
 
 Configure these under **Settings → Secrets and variables → Actions** (repository secrets).
 
-| Secret name | Required when | Description | Where to get it |
-|-------------|----------------|-------------|-----------------|
-| `AZURE_STATIC_WEB_APPS_API_TOKEN` | Only if you chose **Deployment token** | Deployment token for the Static Web App | Azure Portal → your Static Web App → **Manage deployment token** → copy. Not needed if you chose **GitHub** authorization. |
+| Secret name | Required | Description | Where to get it |
+|-------------|----------|-------------|-----------------|
+| `AZURE_STATIC_WEB_APPS_API_TOKEN` | **Yes** (for deployment) | Deployment token for the Static Web App. The deploy action requires it; without it you get "deployment_token was not provided". | Azure Portal → your Static Web App → **Overview** → **Manage deployment token** → copy. |
 | `VITE_API_URL` | Yes (for contact form) | Contact form API base URL | Your Azure Function URL, e.g. `https://<function-app-name>.azurewebsites.net/api/ContactForm`. |
 | `VITE_FUNCTION_KEY` | Yes (production) | Function key for the ContactForm API | Azure Portal → Function App → **Functions** → **ContactForm** → **Function keys** → copy default key. |
 | `VITE_APPINSIGHTS_KEY` | Optional | Application Insights key or connection string | Azure Portal → Application Insights resource → **Overview** (instrumentation key) or **Connection string**. |
@@ -49,11 +34,21 @@ These are passed to the workflow from the secrets above and used during `vite bu
 ## If you recreate the Azure Static Web App
 
 1. In Azure, create a new Static Web App and connect it to this GitHub repo.
-2. Choose **Deployment authorization**:
-   - **GitHub** – No token secret needed. Ensure the workflow file is [`.github/workflows/azure-static-web-apps.yml`](../.github/workflows/azure-static-web-apps.yml) (it already sends `github_id_token`).
-   - **Deployment token** – Copy the token from **Manage deployment token** and in GitHub **Settings → Secrets and variables → Actions** set or update `AZURE_STATIC_WEB_APPS_API_TOKEN` to that value.
+2. Copy the **deployment token** from **Overview → Manage deployment token** and in GitHub **Settings → Secrets and variables → Actions** add or update `AZURE_STATIC_WEB_APPS_API_TOKEN` with that value.
 3. Keep `VITE_API_URL`, `VITE_FUNCTION_KEY`, and `VITE_APPINSIGHTS_KEY` as needed for the new environment.
-4. No workflow changes are required when recreating the app—only update the token secret if you use **Deployment token**.
+
+## Troubleshooting
+
+### "deployment_token was not provided"
+
+The deploy step requires the deployment token. Add it as a repository secret:
+
+1. In **Azure Portal**, open your Static Web App → **Overview** → **Manage deployment token** → copy the token.
+2. In **GitHub**, go to the repo → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**.
+3. Name: `AZURE_STATIC_WEB_APPS_API_TOKEN`, Value: the token you copied.
+4. Re-run the failed workflow (or push a new commit).
+
+To allow the workflow to succeed **without** deploying when the token is missing (e.g. CI-only), you can set `SKIP_DEPLOY_ON_MISSING_SECRETS: true` in the `env` of the "Build And Deploy" step in the workflow. Deployment will be skipped until the secret is set.
 
 ## Build configuration (in the workflow)
 
