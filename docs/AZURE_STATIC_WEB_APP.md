@@ -50,6 +50,19 @@ The deploy step requires the deployment token. Add it as a repository secret:
 
 To allow the workflow to succeed **without** deploying when the token is missing (e.g. CI-only), you can set `SKIP_DEPLOY_ON_MISSING_SECRETS: true` in the `env` of the "Build And Deploy" step in the workflow. Deployment will be skipped until the secret is set.
 
+### InternalServerError / "content server has rejected the request" / "swa-db-connections"
+
+If the deploy step fails with an internal error or a message about the deployment token:
+
+1. **Use the debugging step** – The workflow includes a "Deployment debugging (pre-deploy)" step. In the run log, check:
+   - **Workflow file** – Should show `azure-static-web-apps.yml`. If Azure Portal still shows an old workflow name (e.g. `azure-static-web-apps-gentle-beach-00be72703.yml`), the run might be coming from that file if it still exists in the repo. This repo uses only `.github/workflows/azure-static-web-apps.yml`.
+   - **AZURE_STATIC_WEB_APPS_API_TOKEN** – Should say "set (non-empty)". If it says "MISSING or empty", add or update the secret as above.
+   - **Workspace layout** – Confirms `app_location: "/"` and `api_location: "api"` exist. The path `swa-db-connections` is sometimes checked by Azure’s backend; it’s not required in this repo and can be ignored if the rest of the layout is correct.
+
+2. **Reset the deployment token** – In Azure Portal → Static Web App → **Overview** → **Manage deployment token** → **Reset token**. Copy the new token and update the `AZURE_STATIC_WEB_APPS_API_TOKEN` secret in GitHub, then re-run the workflow.
+
+3. **Azure still using an old workflow file** – GitHub runs whatever workflow files exist in the repo on push/PR. If you renamed or replaced the workflow (e.g. to `azure-static-web-apps.yml`), ensure the old file is deleted and that only the new workflow triggers on `main`. In Azure Portal, under the Static Web App’s deployment/build settings, if there is a field for “Workflow file” or “GitHub workflow”, set it to the filename you use (e.g. `azure-static-web-apps.yml`) if the portal allows editing; otherwise the link is by repo + branch, and the workflow that runs is the one in the repo.
+
 ## Build configuration (in the workflow)
 
 | Setting | Value | Meaning |

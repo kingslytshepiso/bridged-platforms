@@ -9,6 +9,10 @@
 # Without AZURE_STATIC_WEB_APPS_API_TOKEN you get "deployment_token was not provided". To let the workflow
 # run without deploying (e.g. CI-only), set env SKIP_DEPLOY_ON_MISSING_SECRETS: true in the deploy step.
 # GITHUB_TOKEN is provided automatically; used for PR comments.
+#
+# This file is the only SWA workflow in this repo (azure-static-web-apps.yml). If Azure Portal still
+# shows an old workflow name from when the app was created, that is the name Azure remembered; the run
+# is triggered by this file when pushing to main. See docs/AZURE_STATIC_WEB_APP.md for troubleshooting.
 
 name: Azure Static Web Apps CI/CD
 
@@ -38,6 +42,21 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Deployment debugging (pre-deploy)
+        run: |
+          echo "=== Workflow identity ==="
+          echo "Workflow name: ${{ github.workflow }}"
+          echo "Workflow file: ${{ github.event.repository.name }}/.github/workflows/azure-static-web-apps.yml"
+          echo "Trigger: ${{ github.event_name }} on ${{ github.ref }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "=== Workspace layout (root) ==="
+          ls -la
+          echo "=== App location (/) ==="
+          ls -la . 2>/dev/null || true
+          echo "=== api_location (api) ==="
+          ls -la api 2>/dev/null || true
+          echo "=== Deployment token check (value is never printed) ==="
+          if [ -n "${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}" ]; then echo "AZURE_STATIC_WEB_APPS_API_TOKEN: set"; else echo "AZURE_STATIC_WEB_APPS_API_TOKEN: MISSING or empty"; fi
       - name: Get GitHub OIDC token (for GitHub deployment authorization)
         if: ${{ github.event_name != 'pull_request' || github.event.action != 'closed' }}
         id: idtoken
