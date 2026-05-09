@@ -57,6 +57,13 @@ export default [
     },
   },
   {
+    files: ['src/components/three/**/*.{js,jsx}'],
+    rules: {
+      // R3F / drei use Three.js props on JSX elements (not DOM)
+      'react/no-unknown-property': 'off',
+    },
+  },
+  {
     files: ['api/**/*.js'],
     languageOptions: {
       sourceType: 'commonjs',
