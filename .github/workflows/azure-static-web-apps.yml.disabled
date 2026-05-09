@@ -5,7 +5,6 @@
 #   AZURE_STATIC_WEB_APPS_API_TOKEN  - REQUIRED. Deployment token from Azure: Static Web App → Overview → Manage deployment token → copy.
 #   VITE_API_URL                     - Contact form API endpoint (e.g. https://<function-app>.azurewebsites.net/api/ContactForm)
 #   VITE_FUNCTION_KEY                - Azure Function key for ContactForm (optional for local; required for production)
-#   VITE_APPINSIGHTS_KEY             - Application Insights connection string or instrumentation key (optional)
 #
 # Without AZURE_STATIC_WEB_APPS_API_TOKEN you get "deployment_token was not provided".
 # GITHUB_TOKEN is provided automatically; used for PR comments.
@@ -43,7 +42,6 @@ jobs:
           HUSKY: "0"
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_FUNCTION_KEY: ${{ secrets.VITE_FUNCTION_KEY }}
-          VITE_APPINSIGHTS_KEY: ${{ secrets.VITE_APPINSIGHTS_KEY }}
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}

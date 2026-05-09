@@ -1,9 +1,8 @@
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { HiBolt, HiGlobeAlt } from "react-icons/hi2";
 import { MdEmail } from "react-icons/md";
 import { submitContactForm } from "../api/contact";
-import { trackContactForm, trackPageView, trackException } from "../services/applicationInsights";
 import { logError } from "../utils/logger";
 
 const Contact = () => {
@@ -18,19 +17,9 @@ const Contact = () => {
     type: null, // 'success', 'error', 'loading'
     message: "",
   });
-  const [formStarted, setFormStarted] = useState(false);
-
-  // Track when Contact section comes into view
-  useEffect(() => {
-    if (isInView) {
-      trackPageView('Contact Section');
-    }
-  }, [isInView]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus({ type: "loading", message: "Sending message..." });
-    trackContactForm('submitted', { hasName: !!formData.name, hasEmail: !!formData.email });
 
     try {
       await submitContactForm(formData);
@@ -40,21 +29,13 @@ const Contact = () => {
         message:
           "Thank you! Your message has been sent successfully. We'll get back to you soon.",
       });
-      trackContactForm('success');
       setFormData({ name: "", email: "", message: "" });
-      setFormStarted(false);
       setTimeout(() => {
         setStatus({ type: null, message: "" });
       }, 5000);
     } catch (error) {
       logError("Contact form request error", error, {
         formData: { name: formData.name, email: formData.email, hasMessage: !!formData.message },
-      });
-      trackContactForm('error', { error: error.message });
-      trackException(error, {
-        component: 'Contact',
-        action: 'submit',
-        errorType: error.name || 'NetworkError',
       });
       const message =
         error.message === "Failed to fetch" || error.message.includes("Network")
@@ -65,10 +46,6 @@ const Contact = () => {
   };
 
   const handleChange = (e) => {
-    if (!formStarted) {
-      setFormStarted(true);
-      trackContactForm('started');
-    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
