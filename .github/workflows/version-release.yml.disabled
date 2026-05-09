@@ -1,3 +1,4 @@
+# Disabled: GitHub only runs .yml/.yaml in this folder. Rename to version-release.yml to re-enable.
 name: Version and Release
 
 on:

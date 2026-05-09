@@ -1,3 +1,4 @@
+# Disabled: GitHub only runs .yml/.yaml in this folder. Rename to azure-static-web-apps.yml to re-enable.
 # Azure Static Web Apps – build and deploy (token deployment)
 #
 # Required GitHub repository secrets (Settings → Secrets and variables → Actions):
