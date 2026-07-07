@@ -4,13 +4,14 @@ import { useThree } from '@react-three/fiber'
 import { Float, Text } from '@react-three/drei'
 import * as THREE from 'three'
 import { HERO_TROIKA_FONT } from '../../../three/fonts'
+import { getHeroTitleLayout } from './heroTitleLayout'
 
 function HeroTitleGroup({ palette, reducedMotion }) {
   const { viewport } = useThree()
 
-  const titleFont = useMemo(() => Math.min(viewport.width * 0.268, 1.73), [viewport.width])
-  const subtitleFont = useMemo(() => Math.min(viewport.width * 0.089, 0.605), [viewport.width])
-  const maxSubtitleWidth = useMemo(() => viewport.width * 0.96, [viewport.width])
+  const layout = useMemo(() => getHeroTitleLayout(viewport.width), [viewport.width])
+
+  const outlineBlurScale = palette.titleOutlineBlurScale * layout.outlineBlurMul
 
   const bloom = useMemo(() => {
     const n = 0.12
@@ -18,40 +19,42 @@ function HeroTitleGroup({ palette, reducedMotion }) {
   }, [reducedMotion])
 
   const titleContent = (
-    <group position={[0, 0.17, 0]}>
+    <group position={[0, layout.titleGroupY, 0]}>
       <Text
-        position={[0.05, -0.05, -0.12]}
+        position={[0.05 * layout.titleOffsetMul, -0.05 * layout.titleOffsetMul, -0.12]}
         font={HERO_TROIKA_FONT}
-        fontSize={titleFont}
+        fontSize={layout.titleFont}
+        maxWidth={layout.maxTitleWidth}
         letterSpacing={-0.025}
         lineHeight={1.05}
         textAlign="center"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.012 * titleFont * palette.titleOutlineBlurScale}
-        outlineBlur={reducedMotion ? 0 : 0.035 * titleFont * palette.titleOutlineBlurScale}
+        outlineWidth={0.012 * layout.titleFont * outlineBlurScale}
+        outlineBlur={reducedMotion ? 0 : 0.035 * layout.titleFont * outlineBlurScale}
         outlineColor={palette.titleOutline}
         outlineOpacity={palette.titleDepthOutlineOpacity}
       >
-        Bridged Platforms
+        {layout.title}
         <meshStandardMaterial color={palette.titleDepth} metalness={0.12} roughness={0.9} toneMapped />
       </Text>
 
       <Text
         position={[0, 0, 0]}
         font={HERO_TROIKA_FONT}
-        fontSize={titleFont}
+        fontSize={layout.titleFont}
+        maxWidth={layout.maxTitleWidth}
         letterSpacing={-0.025}
         lineHeight={1.05}
         textAlign="center"
         anchorX="center"
         anchorY="middle"
-        outlineWidth={0.017 * titleFont * palette.titleOutlineBlurScale}
-        outlineBlur={reducedMotion ? 0 : 0.012 * titleFont * palette.titleOutlineBlurScale}
+        outlineWidth={0.017 * layout.titleFont * outlineBlurScale}
+        outlineBlur={reducedMotion ? 0 : 0.012 * layout.titleFont * outlineBlurScale}
         outlineColor={palette.titleAccent}
         outlineOpacity={palette.titleFillOutlineOpacity}
       >
-        Bridged Platforms
+        {layout.title}
         <meshStandardMaterial
           color={palette.titleMain}
           emissive={palette.titleMain}
@@ -62,11 +65,12 @@ function HeroTitleGroup({ palette, reducedMotion }) {
         />
       </Text>
 
-      <group position={[-0.05, -0.04, -0.05]}>
+      <group position={[-0.05 * layout.titleOffsetMul, -0.04 * layout.titleOffsetMul, -0.05]}>
         <Text
           position={[0, 0, 0]}
           font={HERO_TROIKA_FONT}
-          fontSize={titleFont}
+          fontSize={layout.titleFont}
+          maxWidth={layout.maxTitleWidth}
           letterSpacing={-0.025}
           lineHeight={1.05}
           textAlign="center"
@@ -74,7 +78,7 @@ function HeroTitleGroup({ palette, reducedMotion }) {
           anchorY="middle"
           renderOrder={-1}
         >
-          Bridged Platforms
+          {layout.title}
           <meshStandardMaterial
             color={palette.titleAccent}
             emissive={palette.titleAccent}
@@ -92,20 +96,20 @@ function HeroTitleGroup({ palette, reducedMotion }) {
 
   const taglineContent = (
     <Text
-      position={[0, -1.12, 0]}
+      position={[0, layout.taglineY, 0]}
       font={HERO_TROIKA_FONT}
-      fontSize={subtitleFont}
-      maxWidth={maxSubtitleWidth}
+      fontSize={layout.subtitleFont}
+      maxWidth={layout.maxSubtitleWidth}
       textAlign="center"
       anchorX="center"
       anchorY="top"
       lineHeight={1.25}
       letterSpacing={0.02}
-      outlineWidth={subtitleFont * 0.065}
+      outlineWidth={layout.subtitleFont * 0.065}
       outlineColor={palette.titleMain}
       outlineOpacity={0.08}
     >
-      Intelligent Systems. Seamless Integration. Secure Automation.
+      {layout.tagline}
       <meshStandardMaterial
         color={palette.tagline}
         emissive={palette.titleAccent}
@@ -135,7 +139,7 @@ function HeroTitleGroup({ palette, reducedMotion }) {
         rotationIntensity={rotInt}
         floatIntensity={floatInt}
         speed={floatSpeed}
-        floatingRange={[-0.09, 0.09]}
+        floatingRange={[-layout.floatRange, layout.floatRange]}
       >
         <group>{titleContent}</group>
       </Float>
@@ -143,7 +147,7 @@ function HeroTitleGroup({ palette, reducedMotion }) {
         rotationIntensity={rotInt * 0.72}
         floatIntensity={floatInt * 0.8}
         speed={floatSpeed * 1.06}
-        floatingRange={[-0.08, 0.08]}
+        floatingRange={[-layout.taglineFloatRange, layout.taglineFloatRange]}
       >
         <group>{taglineContent}</group>
       </Float>
