@@ -41,6 +41,7 @@ export function getHeroTitleLayout(viewportWidth) {
   const titleGroupY = titleWraps ? 0.28 : 0.17
   const taglineY = titleWraps ? -1.28 : -1.12
 
+  // Visual overflow tightening follows viewport width, not wrap state.
   const isNarrow = viewportWidth < NARROW_VIEWPORT_THRESHOLD
   const floatRange = isNarrow ? 0.05 : 0.09
   const taglineFloatRange = isNarrow ? 0.045 : 0.08
