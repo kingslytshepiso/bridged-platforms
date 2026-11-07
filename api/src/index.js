@@ -1,9 +1,8 @@
 const { app } = require('@azure/functions');
 
 /**
- * Minimal HTTP function so the Static Web App has "at least one function",
- * which enables Application Insights for the SWA and removes the warning.
- * Contact form submissions continue to use the external Azure Function.
+ * Minimal HTTP function for the Static Web App managed API (e.g. health).
+ * Contact form submissions use the external Azure Function (see VITE_API_URL).
  */
 app.http('health', {
   methods: ['GET'],

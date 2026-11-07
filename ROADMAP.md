@@ -5,9 +5,7 @@ This document outlines planned features and enhancements for the Bridged Platfor
 ## Completed Features ✅
 
 ### Q1 2025
-- ✅ **Application Insights Integration** - User tracking and analytics
 - ✅ **Cookie Consent System** - GDPR/POPIA compliant cookie management
-- ✅ **Enhanced User Tracking** - Custom event tracking for user interactions
 - ✅ **Cookie Preferences Management** - Granular control over cookie categories
 
 ## Planned Features 🚀
@@ -35,7 +33,7 @@ Implement an AI-powered chatbot to provide 24/7 customer support and lead qualif
 - Azure Bot Framework or Azure OpenAI Service
 - Integration with existing contact form API
 - Floating widget UI (bottom-right corner)
-- Analytics integration with Application Insights
+- Analytics strategy to be chosen when the feature is implemented (e.g. privacy-preserving tooling)
 
 **Benefits:**
 - 24/7 availability for potential clients
@@ -46,7 +44,6 @@ Implement an AI-powered chatbot to provide 24/7 customer support and lead qualif
 
 **Dependencies:**
 - Azure Bot Service or Azure OpenAI account
-- Application Insights (already implemented)
 - Cookie consent system (already implemented)
 
 ---
@@ -155,7 +152,7 @@ Full website translation support for English and Afrikaans.
 
 - Roadmap priorities may shift based on user feedback and business needs
 - All features will maintain GDPR/POPIA compliance
-- Features will integrate with existing Application Insights tracking
+- New features should respect cookie preferences and POPIA/GDPR obligations
 - User privacy and data protection remain top priorities
 
 ---

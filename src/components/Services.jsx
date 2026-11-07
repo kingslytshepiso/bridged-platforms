@@ -1,5 +1,5 @@
 import { motion, useInView } from "framer-motion";
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import {
   HiBolt,
   HiCurrencyDollar,
@@ -8,7 +8,6 @@ import {
   HiSparkles,
 } from "react-icons/hi2";
 import { MdMemory } from "react-icons/md";
-import { trackServiceView, trackServiceInteraction } from "../services/applicationInsights";
 import ServiceDetailDialog from "./ServiceDetailDialog";
 
 const Services = () => {
@@ -18,13 +17,6 @@ const Services = () => {
   const [selectedService, setSelectedService] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const cardRefs = useRef([]);
-
-  // Track when Services section comes into view
-  useEffect(() => {
-    if (isInView) {
-      trackServiceView('Services Section');
-    }
-  }, [isInView]);
 
   const services = [
     {
@@ -192,7 +184,6 @@ const Services = () => {
   const handleServiceClick = (service, index) => {
     setSelectedService({ ...service, index });
     setIsDialogOpen(true);
-    trackServiceView(service.title);
   };
 
   return (
@@ -253,7 +244,6 @@ const Services = () => {
               whileHover={{ y: -10, scale: 1.02 }}
               onHoverStart={() => {
                 setHoveredIndex(index);
-                trackServiceInteraction(service.title);
               }}
               onHoverEnd={() => setHoveredIndex(null)}
               onClick={() => handleServiceClick(service, index)}

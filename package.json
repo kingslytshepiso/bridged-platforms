@@ -1,6 +1,6 @@
 {
   "name": "bridged-platforms",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
@@ -15,7 +15,7 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "prepare": "husky install",
+    "prepare": "husky",
     "version:patch": "node scripts/version-bump.js patch",
     "version:minor": "node scripts/version-bump.js minor",
     "version:major": "node scripts/version-bump.js major",
@@ -28,13 +28,16 @@
     ]
   },
   "dependencies": {
-    "@microsoft/applicationinsights-web": "^3.3.11",
+    "@fontsource/inter": "^5.2.8",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "framer-motion": "^10.16.16",
     "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-cookie-consent": "^10.0.1",
     "react-dom": "^18.2.0",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "three": "0.182.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -60,5 +63,8 @@
     "typescript": "^5.9.3",
     "vite": "^5.0.8",
     "vitest": "^4.0.16"
+  },
+  "overrides": {
+    "three": "0.182.0"
   }
 }

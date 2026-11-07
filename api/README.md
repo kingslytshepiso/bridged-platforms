@@ -1,11 +1,8 @@
 # Static Web App API
 
-Minimal Azure Functions (Node.js v4) used by this Static Web App so that **Application Insights is enabled**. Azure requires at least one function in the app to apply App Insights and remove the warning:
+Minimal Azure Functions (Node.js v4) deployed with this Static Web App. It provides a small **managed API** surface (e.g. for health checks) while the **contact form** continues to use the external Azure Function from `VITE_API_URL` (see `docs/API_INTEGRATION.md`).
 
-> App Insights is only applicable to Static Web Apps with at least one function. Add a function to your app to enable App Insights.
-
-- **`GET /api/health`** – Returns `{ ok: true }`. Use for health checks or to satisfy the “one function” requirement.
-- **Contact form** – Still handled by the external Azure Function (see `VITE_API_URL` / `docs/API_INTEGRATION.md`). This API does not replace it.
+- **`GET /api/health`** – Returns a JSON payload. Use for probes or local verification with `swa start`.
 
 ## Local development
 
